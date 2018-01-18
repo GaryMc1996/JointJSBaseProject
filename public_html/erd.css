@@ -1,0 +1,15 @@
+#paper {
+    width: inherit;
+    display: block;
+    border: 0;
+    margin-bottom: 30px;
+    text-align: left;
+    background: #464a65;
+}
+#paper>svg {
+    overflow: visible;
+}
+.connection,
+.connection-wrap {
+    stroke: #ccc00000ef;
+}

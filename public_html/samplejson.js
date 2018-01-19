@@ -1251,20 +1251,27 @@ var createLink = function (elm1, elm2) {
 var verticesCount;
 var length = smallJSONData.vertices.length;
 var storyAmount = 0;
-for (verticesCount = 0; verticesCount < length; verticesCount++)
-{
-    var vertexType = (smallJSONData.vertices[verticesCount]['_label']);
-    console.log(vertexType);
-    if (vertexType === "Story")
-    {
-        storyAmount++;
-    }
-}
-console.log("ssss-= ",storyAmount);
+//for (verticesCount = 0; verticesCount < length; verticesCount++)
+//{
+//    var vertexType = (smallJSONData.vertices[verticesCount]['_label']);
+//    console.log(vertexType);
+//    if (vertexType === "Story")
+//    {
+//        storyAmount++;
+//    }
+//}
+//console.log("ssss-= ",storyAmount);
 var edgesCount = 0;
 var edgesLength = smallJSONData.edges.length;
 var targetCanvasId;
 var sourceCanvasId;
+var storyX = 250;
+var storyY = 0;
+var idX = 500;
+var idY = 0;
+var flyerX = 750;
+var flyerY = 0;
+
 
 for (verticesCount = 0; verticesCount < length; verticesCount++)
 {
@@ -1273,19 +1280,18 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
     //var xcoord = Math.abs(smallJSONData.vertices[verticesCount]['xcoord']);
     //var ycoord = Math.abs(smallJSONData.vertices[verticesCount]['ycoord']);
     var name = smallJSONData.vertices[verticesCount].name;
-    var vertexTyped = (smallJSONData.vertices[verticesCount]['_label']);
+    var vertexType = (smallJSONData.vertices[verticesCount]['_label']);
     //console.log(vertexType);
-   var storyCount = 1;
-   var indirectDriverCount =1;
-   
+    var storyCount = 1;
+    var indirectDriverCount = 1;
+
 
     if (vertexType === "Story")
     {
-        var storyXcoord = 150;
-        var storyYcoord = 150;
-        console.log("x = ", storyXcoord, "y = ", storyYcoord * storyCount);
+        storyY = storyY + 250;
+        console.log("x = ", storyX, "y = ", storyY);
         var shapes = new erd.ISA({
-            position: {x: storyXcoord, y: storyYcoord},
+            position: {x: storyX, y: storyY},
             attrs: {
                 text: {
                     fill: '#fffff',
@@ -1303,10 +1309,11 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
     }
     if (vertexType === "IndirectDriver")
     {
-        idYcoord = 150*indirectDriverCount; 
-        console.log("x = ", storyXcoord, "y = ", idYcoord);
+        idY = idY + 250;
+        //idX = storyX;
+        //console.log("herex = ", storyXcoord, "y = ", idYcoord);
         var shapes = new erd.ISA({
-            position: {x: storyXcoord+250, y: idYcoord},
+            position: {x: idX, y: idY},
             attrs: {
                 text: {
                     fill: '#fffff',
@@ -1321,8 +1328,28 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
                 }
             }
         });
-        console.log(indirectDriverCount);
-        
+    }
+    if (vertexType === "Flyer")
+    {
+        flyerY = flyerY + 250;
+        //flyerX = idX;
+        console.log("herex = ", flyerX, "y = ", idX);
+        var shapes = new erd.ISA({
+            position: {x: flyerX, y: flyerY},
+            attrs: {
+                text: {
+                    fill: '#fffff',
+                    text: name,
+                    'letter-spacing': 0,
+                    style: {'text-shadow': '1px 0 1px #333333'}
+                },
+                '.outer, .inner': {
+                    fill: '#31d0c6',
+                    stroke: 'none',
+                    filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
+                }
+            }
+        });
     }
     graph.addCells(shapes);
 //var oldshape;
@@ -1344,7 +1371,7 @@ function getCanvasIdByDatabaseId(databaseId, graph)
     // Go through each of the elements in the graph and find the 
     // element that contains the databaseId
     _.each(graph.getElements(), function (el) {
-        console.log(el);
+        //console.log(el);
         if (el.id === databaseId)
         {
             returnValue = el.get('id');
@@ -1371,7 +1398,7 @@ for (edgesCount; edgesCount < edgesLength; edgesCount++) {
     newCanvasEdge.addTo(graph);
     //newCanvasEdge.set( { databaseId:smallJSONData.edges[edgesCount]._id } );
 
-    //createLink(sourceCanvasId, targetCanvasId);
+    createLink(sourceCanvasId, targetCanvasId);
 
 
 }

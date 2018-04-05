@@ -4,27 +4,310 @@ To change this license header, choose License Headers in Project Properties.
 To change this template file, choose Tools | Templates
 and open the template in the editor.
 -->
+
 <html>
+
     <head>
         <title>TODO supply a title hello</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
+        <link rel="stylesheet" type="text/css" href="joint.ui.inspector.css"/>
         <link rel="stylesheet" type="text/css" href="joint.css">
         <link rel="stylesheet" type="text/css" href="erd.css">
-        
+        <link rel="stylesheet" type="text/css" href="joint.ui.contextToolbar.css">
+        <link rel="stylesheet" type="text/css" href="joint.ui.popup.css">
+        <link rel="stylesheet" type="text/css" href="joint.ui.inspector.css">
+        <link rel="stylesheet" type="text/css" href="joint.ui.paperScroller.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="joint.ui.navigator.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.6/Chart.min.js'></script>
 
+        <style>
+            /* Remove the navbar's default margin-bottom and rounded borders */ 
+            .navbar {
+                margin-bottom: 0;
+                border-radius: 0;
+
+            }
+
+            /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+            .row.content {height: 450px}
+
+            /* Set gray background color and 100% height */
+            .sidenav {
+                padding-top: 20px;
+                background-color: #f1f1f1;
+                height: 100%;
+            }
+
+            /* Set black background color, white text and some padding */
+            footer {
+                background-color: #555;
+                color: white;
+                padding: 15px;
+            }
+            /*body { padding-top: 50px; }*/
+
+            /* On small screens, set height to 'auto' for sidenav and grid */
+            /* On small screens, set height to 'auto' for sidenav and grid */
+            @media screen and (max-width: 960px) {
+                body { padding-top: 0px; }
+                .sidenav {
+                    height: auto;
+                    padding: 15px;
+                }
+                .row.content {height: auto;} 
+            }
+            hr { 
+                display: block;
+                margin-top: 0.5em;
+                margin-bottom: 0.5em;
+                margin-left: auto;
+                margin-right: auto;
+                border-style: inset;
+                border-width: 1px;
+            }
+            /* The switch - the box around the slider */
+            .label{
+                margin-bottom: -5px;
+            }
+            .switch {
+                position: relative;
+                display: inline-block;
+                width: 60px;
+                height: 34px;
+            }
+
+            /* Hide default HTML checkbox */
+            .switch input {display:none;}
+
+            /* The slider */
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #ccc;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }
+
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 26px;
+                width: 26px;
+                left: 4px;
+                bottom: 4px;
+                background-color: white;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }
+
+            input:checked + .slider {
+                background-color: #2196F3;
+            }
+
+            input:focus + .slider {
+                box-shadow: 0 0 1px #2196F3;
+            }
+
+            input:checked + .slider:before {
+                -webkit-transform: translateX(26px);
+                -ms-transform: translateX(26px);
+                transform: translateX(26px);
+            }
+
+            /* Rounded sliders */
+            .slider.round {
+                border-radius: 34px;
+            }
+
+            .slider.round:before {
+                border-radius: 50%;
+            }
+            .closePopup {
+                position: absolute;
+                left: 100px;
+                top: 150px;
+            }
+            @media print {
+                body {
+                    visibility: hidden;
+                }
+                .myChart,canvas {
+                    visibility: visible;
+                }
+                .myChart,canvas {
+                    position: absolute;
+                    left: 70px;
+                    top: 100px;
+
+                }
+            }
+        </style>
     </head>
     <body>
-         <div id="paper2"></div>
-         
+        <div class ='fluid-container'>
+            <!--Navbar at top of page-->
+            <nav class="navbar navbar-inverse navbar-fixed-top" style="display:inline-block" >
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>                        
+                        </button>
+                        <a class="navbar-brand" href="#">Logo</a>
+                    </div>
+                    <div class="collapse navbar-collapse" id="myNavbar">
+                        <ul class="nav navbar-nav">
+                            <li class="active"><a href="#">Home</a></li>
+                            <li><a href="#">About</a></li>
+                            <li><a href="#">Projects</a></li>
+                            <li><a href="#">Contact</a></li>
+                        </ul>
+                        <div class="navbar-nav">
+                        <!--Button to show all knowledge nodes-->
+                        <button class="btn btn-danger navbar-btn activateKnowledgeNodesButton" data-toggle="button" aria-pressed="false" onclick="drawAllKnowledgeNodes(this.getAttribute('aria-pressed'));">
+                            Add Knowledge
+                        </button>
+                        <!--Button to show all Actor nodes-->
+                        <button class="btn btn-danger navbar-btn activateActorNodesButton" data-toggle="button" aria-pressed="false" onclick="drawAllActorNodes(this.getAttribute('aria-pressed'));">
+                            Add Actors
+                        </button>
+                        <!--                        <button class="btn btn-danger navbar-btn activateActorNodesButton" data-toggle="button" aria-pressed="false" onclick="displayOnlyActorAndParent(this.getAttribute('aria-pressed'));">
+                                                    Only Actors and Parent
+                                                </button>-->
+                        <button class="btn btn-danger navbar-btn activateViewCauselEvidenceButton" data-toggle="button" aria-pressed="false" onclick="displayCausalEvidence(this.getAttribute('ariagetAttribute-pressed'));">
+                            test causal evidence summary
+                        </button>
+                        </div>
+                        <div class = "navbar-nav">
+                           
+                        <button class="btn navbar-btn getCausalEvidenceSummaryButton"  style="background-color: #222; border-color: #222;margin-top: 0px; margin-bottom: 0px; outline: none;">
+                            <label class="switch" style="margin-bottom: -5px;" >
+                                <input class="getCausalEvidenceSummarySwitch" type="checkbox">
+                                <span class="slider round"></span>
+                            </label>
+                        </button>
+                        </div>
+                         <div class = "navbar-nav findCausalDataStartToFinish form-inline" style ="display:none;">
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="startNode" value="startNodeId" name ="startNodeId" placeholder="Select Start" style="display:none;">
+                                <input type="text" class="form-control" id="startNodeName" value="startNodeName" name ="startNodeName" placeholder="Select Start">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="finishNode" value="finishNodeId" name ="finishNodeId" placeholder="Select Finish" style="display:none;">
+                                <input type="text" class="form-control" id="finishNodeName" value="finishNodeName" name ="finishNodeName" placeholder="Select Finish">
+                                
+                            </div>
+                            <button class="btn btn-default navbar-btn" onclick="displayCausalEvidence(document.getElementById('startNode').value,document.getElementById('finishNode').value);">Submit</button>
+                 
+                         </div>
+                    </div>
+
+
+                </div>
+
+            </nav>
+            <!--Display graph-->
+            <div class="col-lg-9 paper-container" style="height:100vh;overflow:scroll;overflow-x: hidden;" >
+
+
+            </div> 
+
+            <div class="col-lg-3 sidenav classification-container">
+            </div>
+
+            <!--Easy Tree-->
+            <div class="col-lg-3 sidenav easyTreeforDisplayNodeData" style = "height:70vh; overflow:scroll; overflow-x: hidden; padding-top:50px">
+                <!--Button that when clicked by the user Expands the data for each node-->
+                <button type="button" class="btn btn-primary displayNodeDataButton" style="display:none; width:100%;" >
+                    <span  class = "glyphicon glyphicon-chevron-right pull-left"></span>
+                    Display Data
+                </button>
+                <ul id="collapsableNodeDataViewer" class="list-group displayNodeData" style="display:none;">
+                </ul>
+
+                <!--Button that when clicked by the user Expands the knowledge for each node-->
+                <button type="button" class="btn btn-primary displayKnowledgeForNodeButton"  style="display:none; width:100%;" >
+                    <span  class = "glyphicon glyphicon-chevron-right pull-left"></span>
+                    Display Knowledge
+                </button>
+                <ul id="collapsableKnowledgeViewer" class="list-group displayKnowledgeperNode" style="display:none;">
+                </ul>
+
+                <button type="button" class="btn btn-primary displayActorsDataButton" style="display:none; width:100%;" >
+                    <span  class = "glyphicon glyphicon-chevron-right pull-left"></span>
+                    Display Actor Data
+                </button>
+                <ul id="collapsableActorDataViewer" class="list-group displayActorData" style="display:none;">
+                </ul>
+                <button type="button" class="btn btn-primary viewCausalSummry"  data-toggle="modal" data-target="#myModal" value= "off" style="display:none; width:100%;" >
+                    Display Causal Summary Data
+                </button>
+            </div>
+            <!-- Trigger the modal with a button -->
+
+            <!-- Modal -->
+            <div id="myModal" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title span12" style="text-align: center;">Supporting Causal Evidence</h4>
+                        </div>
+                        <div class="modal-body">
+                            <canvas id="myChart" class="displayKnowledgeSummarychart"style="margin-top:30px">
+                            </canvas>
+                        </div>
+                        <div class="modal-footer">
+                            <button id ="btn-print" onclick="print()">Print</button>
+                            <button id="exportChart">Export Chart</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!--        </div>-->
+
+            <!--draw navigator-->
+            <div class="col-lg-2 paper-navigator">
+            </div>
+
+        </div>
+
+        <!--Dependancies-->
         <script src="jquery.js"></script>
         <script src="lodash.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="backbone.js"></script>
         <script src="joint.js"></script>
-        <script src ="samplejson.js"></script>
-        <!--<script src="https://d3js.org/d3.v4.min.js"></script>
-        <!--<script src="d3jsExample"></script>-->
+        <script src ="rappid.js"></script>
+        <script src="joint.ui.navigator.js"></script>
+        <script src="joint.ui.inspector.js"></script>
+        <script src="chart.js"></script>
+        <script src ="rappid.css"></script>
+        <script src ="responsive.css"></script>
+        <script src="joint.ui.paperScroller.js"></script>
+        <script src="joint.ui.contextToolbar.js"></script>
+        <script src="joint.ui.popup.js"></script>    
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src ="orientDB.js"></script>
         <script src="erd.js"></script>
+        <script src="joint.ui.inspector.js"></script>
+        <script src="joint.format.svg.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+        <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+        <script src="samplejson.js"></script> 
+
     </body>
 </html>

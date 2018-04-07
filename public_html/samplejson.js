@@ -2445,6 +2445,7 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
             databaseId: smallJSONData.vertices[verticesCount]._id,
             nodeData: smallJSONData.vertices[verticesCount],
             xcoord: storyX,
+            type: 'kb.Story',
             ycoord: storyY
         });
         iconString = iconTable[categoryType];
@@ -2472,6 +2473,7 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
             },
             databaseId: smallJSONData.vertices[verticesCount]._id,
             nodeData: smallJSONData.vertices[verticesCount],
+            type: 'kb.Driver',
             xcoord: driverX,
             ycoord: driverY
         });
@@ -2500,6 +2502,7 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
             },
             databaseId: smallJSONData.vertices[verticesCount]._id,
             nodeData: smallJSONData.vertices[verticesCount],
+            type: 'kb.Activity',
             xcoord: activityX,
             ycoord: activityY
         });
@@ -2527,6 +2530,7 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
             },
             databaseId: smallJSONData.vertices[verticesCount]._id,
             nodeData: smallJSONData.vertices[verticesCount],
+            type: 'kb.Pressure',
             xcoord: pressureX,
             ycoord: pressureY
         });
@@ -2553,6 +2557,7 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
             },
             databaseId: smallJSONData.vertices[verticesCount]._id,
             nodeData: smallJSONData.vertices[verticesCount],
+            type: 'kb.State',
             xcoord: stateX,
             ycoord: stateY
         });
@@ -2579,6 +2584,7 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
             },
             databaseId: smallJSONData.vertices[verticesCount]._id,
             nodeData: smallJSONData.vertices[verticesCount],
+            type: 'kb.Impact',
             xcoord: impactX,
             ycoord: impactY
         });
@@ -2606,6 +2612,7 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
             },
             databaseId: smallJSONData.vertices[verticesCount]._id,
             nodeData: smallJSONData.vertices[verticesCount],
+            type: 'kb.Welfare',
             xcoord: welfareX,
             ycoord: welfareY
         });
@@ -2633,6 +2640,7 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
             },
             databaseId: smallJSONData.vertices[verticesCount]._id,
             nodeData: smallJSONData.vertices[verticesCount],
+            type: 'kb.Response',
             xcoord: responseX,
             ycoord: responseY
         });
@@ -3306,7 +3314,6 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
 
         if (node.kGroup === 'Visual and Performance Arts') {
             visualPerformanceArtsScore = 1;
-            ;
             visualPerformanceArtsData.push(node);
         }
         if (node.kGroup === 'Education and Public Events') {

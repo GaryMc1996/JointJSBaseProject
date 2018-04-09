@@ -2680,29 +2680,36 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
 
 for (edgesCount; edgesCount < edgesLength; edgesCount++) {
     var drawEdge = true;
+    //review can detect backwards links by using x position of each node i.e if targetx < source x then don't draw it
     if (smallJSONData.edges[edgesCount].linkType === 'C1')
     {
-
+         //check to see if the response nodes have backwards links. If so hide them on the graph
+        _.each(responseNodes, function (node) {
+            if (smallJSONData.edges[edgesCount]._outV === node._id) {
+                drawEdge = false;
+            }
+        });
+        if(drawEdge){
         // Find the source id of the causal relationship
         sourceCanvasId = getCanvasIdByDatabaseId(smallJSONData.edges[edgesCount]._outV, this.graph);
 
         // Loop through the edges in the JSON data to find the target vertex
         // Get database id of intermediate vertex ie the linkEvidence node
-        var intVertexDatabaseId = smallJSONData.edges[edgesCount]._inV;
-
+        var c1targetNode = smallJSONData.edges[edgesCount]._inV;
+        
         // Find link with '_outV' equal to intermediate vertex id and property
         // linkType equal to 'C2'.
 
         _.each(smallJSONData.edges, function (link) {
-            if ((link._outV === intVertexDatabaseId) && (link.linkType === 'C2'))
+            if ((link._outV === c1targetNode) && (link.linkType === 'C2'))
             {
-                secondLink = link;
+                c2Link = link;
             }
         });
 
         // Get the target vertex
         //var newTargetCanvasId = getCanvasIdByDatabaseId( secondLink._inV, this.graph );
-        targetCanvasId = getCanvasIdByDatabaseId(secondLink._inV, this.graph);
+        targetCanvasId = getCanvasIdByDatabaseId(c2Link._inV, this.graph);
 
         // Create a Causal link between vertices
         newCanvasEdge = new joint.shapes.kb.CausalLink({
@@ -2717,21 +2724,19 @@ for (edgesCount; edgesCount < edgesLength; edgesCount++) {
 //                newCanvasEdge.label(0, {attrs:{ text: { text: '' }}});
 //                newCanvasEdge.label(1, {attrs:{ text: { text: '' }}});
 
-//check to see if the response nodes have backwards links. If so hide them on the graph
-        _.each(responseNodes, function (node) {
-            if (smallJSONData.edges[edgesCount]._outV === node._id) {
-//                     newCanvasEdge.attr("./display","none");
-//                     newCanvasEdge.attr("relNodeID/display","none");
-//                     console.log(newCanvasEdge);
-                drawEdge = false;
-            }
-        });
-        if (drawEdge) {
+////check to see if the response nodes have backwards links. If so hide them on the graph
+//        _.each(responseNodes, function (node) {
+//            if (smallJSONData.edges[edgesCount]._outV === node._id) {
+//                drawEdge = false;
+//            }
+//        });
+//        if (drawEdge) {
             graph.addCell(newCanvasEdge);
             //add datrabaseid to the link evidnce node to allow knowledge and actors to be connected to it.
             newCanvasEdge.setup(smallJSONData.edges[edgesCount]._inV);
-        }
+//        }
     }
+}
 //            if ( smallJSONData.edges[edgesCount].linkType === 'A' )
 //            {
 //                // Find the source id of the causal relationship
@@ -2773,15 +2778,17 @@ _.each(smallJSONData.vertices, function (node) {
     var knowledgePerNode = [];
     _.each(smallJSONData.edges, function (link) {
         if (link.linkType === "A" && link._outV === node._id) {
-            //console.log("values passed to create actor node==",link._outV,link._inV,actorNodes );
             positionActorNode(link._outV, link._inV, actorNodes, this.graph);
 
         }
+        //if link of type K and it source node is the current node
         if (link.linkType === "K" && link._outV === node._id) {
             _.each(smallJSONData.vertices, function (knowledgeNode) {
+                if(knowledgeNode.category === "Knowledge"){
                 if (knowledgeNode._id === link._inV) {
                     knowledgePerNode.push(knowledgeNode);
                 }
+            }
             });
         }
     });
@@ -2853,6 +2860,7 @@ function getCanvasIdByDatabaseId(databaseId, graph)
     // Go through each of the elements in the graph and find the 
     // element that contains the databaseId 
     _.each(graph.getElements(), function (el) {
+        console.log("graph element = ",el);
         if (el.get('databaseId') === databaseId)
         {
             returnValue = el.get('id');
@@ -2861,29 +2869,29 @@ function getCanvasIdByDatabaseId(databaseId, graph)
 
     return returnValue;
 }
-function displayOnlyActorAndParent(data) {
-
-    _.each(this.graph.getElements(), function (el) {
-        if (el.get('type') !== 'kb.Knowledge' && el.get('type') !== 'kb.Story' && el.get('type') !== 'kb.ActorNode') {
-            var links = graph.getConnectedLinks(el, [false, true]);
-            var nodes = graph.getNeighbors(el, [false, true]);
-
-            _.each(nodes, function (aNodes) {
-                if (aNodes.get('type') === 'kb.ActorNode') {
-                    var actorNodeParent = graph.getNeighbors(aNodes, [true, false]);
-                    aNodes.attr('./display', 'block');
-                    console.log("parents = ", actorNodeParent);
-                    _.each(actorNodeParent, function (actNodeParent) {
-                        actNodeParent.attr('./display', 'block');
-                    });
-                } else {
-                    aNodes.attr('./display', 'none');
-                }
-            });
-
-        }
-    });
-}
+//function displayOnlyActorAndParent(data) {
+//
+//    _.each(this.graph.getElements(), function (el) {
+//        if (el.get('type') !== 'kb.Knowledge' && el.get('type') !== 'kb.Story' && el.get('type') !== 'kb.ActorNode') {
+//            var links = graph.getConnectedLinks(el, [false, true]);
+//            var nodes = graph.getNeighbors(el, [false, true]);
+//
+//            _.each(nodes, function (aNodes) {
+//                if (aNodes.get('type') === 'kb.ActorNode') {
+//                    var actorNodeParent = graph.getNeighbors(aNodes, [true, false]);
+//                    aNodes.attr('./display', 'block');
+//                    console.log("parents = ", actorNodeParent);
+//                    _.each(actorNodeParent, function (actNodeParent) {
+//                        actNodeParent.attr('./display', 'block');
+//                    });
+//                } else {
+//                    aNodes.attr('./display', 'none');
+//                }
+//            });
+//
+//        }
+//    });
+//}
 //function that shows all knowledge nodes on the graph when clicked
 function drawAllKnowledgeNodes(data) {
 
@@ -3351,7 +3359,6 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
     //calculate the position of the knowledge nodes around the node depending on the amount of knowledge adn the 
     //type of node. i.e. rel node or normal node
     var width = (nodeRadius * 2) + 40;
-    var angle;
     var i = 0;
     var kNodeX;
     var kNodeY;
@@ -3364,7 +3371,7 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
     //surounding it based on the number of them. If the node it to be drawn to the left of the parent node
     //ensure that the text is on the outside
     if (visualPerformanceArtsData.length !== 0) {
-        coOrdinates = getCoOrdinates(width, angle, numUniqueNodes, nodeRadius, i, parentX, parentY);
+        coOrdinates = getCoOrdinates(width, numUniqueNodes, nodeRadius, i, parentX, parentY);
         kNodeX = coOrdinates[0];
         kNodeY = coOrdinates[1];
         if (kNodeX < parentX) {
@@ -3377,7 +3384,7 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
         i++;
     }
     if (educationPublicEventsData.length !== 0) {
-        coOrdinates = getCoOrdinates(width, angle, numUniqueNodes, nodeRadius, i, parentX, parentY);
+        coOrdinates = getCoOrdinates(width, numUniqueNodes, nodeRadius, i, parentX, parentY);
         kNodeX = coOrdinates[0];
         kNodeY = coOrdinates[1];
         if (kNodeX < parentX) {
@@ -3388,7 +3395,7 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
         i++;
     }
     if (nonAcademicPressData.length !== 0) {
-        coOrdinates = getCoOrdinates(width, angle, numUniqueNodes, nodeRadius, i, parentX, parentY);
+        coOrdinates = getCoOrdinates(width, numUniqueNodes, nodeRadius, i, parentX, parentY);
         kNodeX = coOrdinates[0];
         kNodeY = coOrdinates[1];
         if (kNodeX < parentX) {
@@ -3399,7 +3406,7 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
         i++;
     }
     if (scientificPrintMediaData.length !== 0) {
-        coOrdinates = getCoOrdinates(width, angle, numUniqueNodes, nodeRadius, i, parentX, parentY);
+        coOrdinates = getCoOrdinates(width, numUniqueNodes, nodeRadius, i, parentX, parentY);
         kNodeX = coOrdinates[0];
         kNodeY = coOrdinates[1];
         if (kNodeX < parentX) {
@@ -3410,7 +3417,7 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
         i++;
     }
     if (broadcastMediaData.length !== 0) {
-        coOrdinates = getCoOrdinates(width, angle, numUniqueNodes, nodeRadius, i, parentX, parentY);
+        coOrdinates = getCoOrdinates(width, numUniqueNodes, nodeRadius, i, parentX, parentY);
         kNodeX = coOrdinates[0];
         kNodeY = coOrdinates[1];
         if (kNodeX < parentX) {
@@ -3421,7 +3428,7 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
         i++;
     }
     if (filmData.length !== 0) {
-        coOrdinates = getCoOrdinates(width, angle, numUniqueNodes, nodeRadius, i, parentX, parentY);
+        coOrdinates = getCoOrdinates(width,numUniqueNodes, nodeRadius, i, parentX, parentY);
         kNodeX = coOrdinates[0];
         kNodeY = coOrdinates[1];
         if (kNodeX < parentX) {
@@ -3432,7 +3439,7 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
         i++;
     }
     if (otherData.length !== 0) {
-        coOrdinates = getCoOrdinates(width, angle, numUniqueNodes, nodeRadius, i, parentX, parentY);
+        coOrdinates = getCoOrdinates(width, numUniqueNodes, nodeRadius, i, parentX, parentY);
         kNodeX = coOrdinates[0];
         kNodeY = coOrdinates[1];
         if (kNodeX < parentX) {
@@ -3443,7 +3450,7 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
         i++;
     }
     if (onlineDigitalMediaData.length !== 0) {
-        coOrdinates = getCoOrdinates(width, angle, numUniqueNodes, nodeRadius, i, parentX, parentY);
+        coOrdinates = getCoOrdinates(width,numUniqueNodes, nodeRadius, i, parentX, parentY);
         kNodeX = coOrdinates[0];
         kNodeY = coOrdinates[1];
         if (kNodeX < parentX) {
@@ -3531,8 +3538,8 @@ function drawReverseKNode(data, knowledgeNodeId, connectedNode, uniqueId, x, y) 
 }
 
 //function that gets the co ordinates for the kNodes to be placed around their parent node
-function getCoOrdinates(width, angle, length, nodeRadius, i, parentX, parentY) {
-
+function getCoOrdinates(width, length, nodeRadius, i, parentX, parentY) {
+    var angle;
     var coOrdinates = [];
     var updatedRad = nodeRadius + 30;
 

@@ -2650,29 +2650,6 @@ for (verticesCount = 0; verticesCount < length; verticesCount++)
     }
     if (categoryType === "Actor")
     {
-//        xcoord = Math.abs(smallJSONData.vertices[verticesCount].xcoord);
-//        ycoord =Math.abs(smallJSONData.vertices[verticesCount].ycoord);
-//        var shapes = new joint.shapes.kb.Framework({
-//            position: {x: xcoord, y: ycoord},
-//            attrs: {
-//                text: {
-//                    fill: '#000000',
-//                    text: shortText,
-//                    'letter-spacing': 0,
-//                    style: {'text-shadow': '1px 0 1px #333333'}
-//                },
-//                '.outer, .inner': {
-//                    fill: '#31d0c6',
-//                    stroke: 'none',
-//                    filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
-//                }
-//            },
-//            databaseId:smallJSONData.vertices[verticesCount]._id,
-//            xcoord:xcoord,
-//            ycoord:ycoord
-//        });
-//        iconString = iconTable[categoryType];
-//        shapes.attr('image/xlink:href', icons[iconString]);
         actorNodes.push(smallJSONData.vertices[verticesCount]);
     }
     graph.addCells(shapes);
@@ -2814,7 +2791,6 @@ function positionActorNode(sourceNode, targetNode, actorNodes, graph) {
                     name = actNode.name;
                     var actorNode = new joint.shapes.kb.Framework({
                         position: {x: x, y: y},
-                        type: 'kb.ActorNode',
                         attrs: {
                             text: {
                                 fill: '#000000',
@@ -2829,6 +2805,7 @@ function positionActorNode(sourceNode, targetNode, actorNodes, graph) {
                             }
                         },
                         databaseId: actNode._id,
+                        type: 'kb.ActorNode',
                         nodeData: actNode
                     });
 
@@ -2848,7 +2825,6 @@ function positionActorNode(sourceNode, targetNode, actorNodes, graph) {
                     });
                     actorLink.attr('./display', 'none');
                     graph.addCell(actorLink);
-                    actorLink.setup();
                 }
             });
         }
@@ -3470,8 +3446,6 @@ function drawKNode(data, knowledgeNodeId, connectedNode, uniqueId, x, y) {
     var knowledgeNodes = new joint.shapes.kb.Knowledge({
         position: {x: x, y: y},
         size: {width: 25, height: 25},
-        //label: vertexLabel,
-        type: 'kb.Knowledge',
         attrs: {
             text: {
                 fill: '#000000',
@@ -3480,6 +3454,7 @@ function drawKNode(data, knowledgeNodeId, connectedNode, uniqueId, x, y) {
                 style: {'text-shadow': '1px 0 1px #333333'}
             }
         },
+        type: 'kb.Knowledge',
         supportingKnowledge: data,
         databaseId: '#' + knowledgeNodeId + uniqueId
     });

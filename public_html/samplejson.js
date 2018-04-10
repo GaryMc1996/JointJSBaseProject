@@ -2184,17 +2184,15 @@ navigato.render();
 //});
 
 paper.on('cell:pointerdown', function (cellView) {
-//    cellView.highlight();
-// $( ".easyTreeforDisplayNodeData" ).append($('<a data-toggle="collapse" href="#collapse1">Expand Knowledge</a>'));
-//each time a new node is clicked empty the contents of the previous node and hide all buttons as thye might not be neccessary
+    
     $('.displayNodeData').empty();
     $('.displayNodeDataButton').css("display", "none");
     $('.displayActorsData').empty();
     $('.displayActorsDataButton').css("display", "none");
     $('.displayKnowledgeperNode').empty();
     $('.displayKnowledgeForNodeButton').css("display", "none");
-//    $('.viewCausalSummry').empty();
     $('.viewCausalSummry').css("display", "none");
+    
     var nodes = [];
     var links = [];
     var nodeKnowledgeData = [];
@@ -2202,53 +2200,12 @@ paper.on('cell:pointerdown', function (cellView) {
     var nodeData;
     var nodeType;
 
-//    console.log("cell View = ",cellView.model);
-//    console.log("cell View = ",cellView.model.attributes.nodeData);
-//    // Get the text to be displayed in the classifictaion section
-//    var nodeData = cellView.model.attributes.nodeData;
-//    console.log(nodeData);
-
-    // $('.classification-container').html( classificationLabel );
-//    var inspector = new joint.ui.Inspector({
-//    cellView: cellView,
-//
-//    inputs: {
-////            attrs: {
-////                text: {
-////                    'font-size': { type: 'number', min: 5, max: 80, group: 'text', index: 2 },
-////                    'text': { type: 'textarea', group: 'text', index: 1 }
-////                }
-////            },
-////            position: {
-////                x: { type: 'number', group: 'geometry', index: 1 },
-////                y: { type: 'number', group: 'geometry', index: 2 }
-////            },
-////            size: {
-////                width: { type: 'number', min: 1, max: 500, group: 'geometry', index: 3 },
-////                height: { type: 'number', min: 1, max: 500, group: 'geometry', index: 4 }
-////            },
-//            nodeData: {
-//                name: { type: 'textarea', group: 'data' },
-//                description:{type: 'textarea', group: 'data'},
-//            }
-//   },
-//   groups: {
-//           text: { label: 'Text', index: 1 },
-//           geometry: { label: 'Geometry', index: 2, closed: true },
-//           data: { label: 'data', index: 3 }
-//   }
-//});
-//
-//$('.easyTreeforDisplayNodeData').append(inspector.render().el);
-//console.log("cell View = ", cellView.model);
-//console.log("cell View = ", cellView.model.attributes.nodeData);
-
 //retrieve the nodeData and the nodetype when user clicks a specific node
 if(getCausalEvidence===false){
     cellView.unhighlight();
+    console.log("cellView = ",cellView);
     nodeData = cellView.model.attributes.nodeData;
     nodeType = cellView.model.attributes.type;
-
     //cycle through all cells in the graph
     graph.get('cells').find(function (cell) {
 
@@ -2263,20 +2220,12 @@ if(getCausalEvidence===false){
                         nodeKnowledgeData.push(kNode.attributes.supportingKnowledge);
                     }
                     if (kNode.get('type') === 'kb.ActorNode') {
-                        console.log("find actor data", kNode);
                         nodeActors.push(kNode.attributes.nodeData);
                     }
                 });
             }
         }
-//    console.log("testing length",displayNodeKnowledge.length);
-//   if(displayNodeKnowledge.length !==0){
-//       console.log("in here");
-//    displayNodeKnowledge(nodeKnowledge);
-//   }
-//    _.each(nodeKnowledge, function(el){
-////       console.log("each individual knowledge elelment = ",el.attributes.supportingKnowledge); 
-//    });
+
         //show all knowledge or actor nodes attached to the node the user has clicked a parent node
         if (cell.get('type') !== 'kb.Knowledge' && cell.get('type') !== 'kb.ActorNode') {
             if (cell.id === cellView.model.id) {
@@ -2284,53 +2233,32 @@ if(getCausalEvidence===false){
                 links = graph.getConnectedLinks(cell, [false, true]);
                 nodes = graph.getNeighbors(cell, [false, true]);
                 //draw only actor links
-                _.each(links, function (kLink) {
-                    if (kLink.get('type') === "kb.ActorLink") {
+                _.each(links, function (actorLink) {
+                    if (actorLink.get('type') === "kb.ActorLink") {
                         //if knowledge and actors are already displayed then turn them off and vice versa
-                        status = kLink.attr('./display');
+                        status = actorLink.attr('./display');
                         if (status === 'none') {
-                            kLink.attr('./display', 'block');
+                            actorLink.attr('./display', 'block');
 
                         } else {
-                            kLink.attr('./display', 'none');
+                            actorLink.attr('./display', 'none');
                         }
                     }
                 });
                 //draw the knowledge and Actor nodes
-                _.each(nodes, function (kNode) {
-                    if (kNode.get('type') === "kb.Knowledge" || kNode.get('type') === "kb.ActorNode") {
-                        status = kNode.attr('./display');
+                _.each(nodes, function (knowledgeActorNode) {
+                    if (knowledgeActorNode.get('type') === "kb.Knowledge" || knowledgeActorNode.get('type') === "kb.ActorNode") {
+                        status = knowledgeActorNode.attr('./display');
                         if (status === 'none') {
-                            kNode.attr('./display', 'block');
-                            cell.attr('background', 'yellow');
+                            knowledgeActorNode.attr('./display', 'block');
                         } else {
-                            kNode.attr('./display', 'none');
+                            knowledgeActorNode.attr('./display', 'none');
                         }
                     }
                 });
-//            _.each(nodes,function(kNode){
-//                
-//                    kNode.attr('./display', 'block');
-//               
-//            });
-//            rating = (cell.get('series')["0"].data["0"].value);
-//            rating = (cell.get('series')["0"].data["7"].value);
-//            if (rating !==0){
-//                console.log(rating);["0"].attributes
-//            }
             }
         }
-//        //extract knowledge particular to a certain node
-//        if (cell.id === cellView.model.id) {
-//            console.log("cell data = ",cell);
-//            console.log(cellView.modal);
-//            nodes = graph.getNeighbors(cell,[false,true]);
-//            _.each(nodes,function(kNodes){
-//                if(kNodes.get('type')=== 'kb.Knowledge'){
-////                    console.log("knowledge nodes appeneded to this node are  = ,",kNodes); 
-//                }
-//            });
-//        }
+
     });
 
     //if conditions are met append the knowledge on the right hand side viewer 
@@ -2343,11 +2271,7 @@ if(getCausalEvidence===false){
     if (nodeActors.length !== 0) {
         displayActorNodes(nodeActors);
     }
-//    var buttonStatus = $(".retrieveCausalKnowledge").find('.btn');
-//    console.log("ddd = ", $(".retrieveCausalKnowledge").find(".checkbox").prop('checked'));
-//    if (buttonStatus["0"] === "button.btn.btn-sm.active.btn-primary") {
-//        console.log("yes is clicked");
-//    }
+
     }
     if (getCausalEvidence === true) {
         nodeType = cellView.model.attributes.type;
@@ -2836,7 +2760,6 @@ function getCanvasIdByDatabaseId(databaseId, graph)
     // Go through each of the elements in the graph and find the 
     // element that contains the databaseId 
     _.each(graph.getElements(), function (el) {
-        console.log("graph element = ",el);
         if (el.get('databaseId') === databaseId)
         {
             returnValue = el.get('id');
@@ -2845,67 +2768,15 @@ function getCanvasIdByDatabaseId(databaseId, graph)
 
     return returnValue;
 }
-//function displayOnlyActorAndParent(data) {
-//
-//    _.each(this.graph.getElements(), function (el) {
-//        if (el.get('type') !== 'kb.Knowledge' && el.get('type') !== 'kb.Story' && el.get('type') !== 'kb.ActorNode') {
-//            var links = graph.getConnectedLinks(el, [false, true]);
-//            var nodes = graph.getNeighbors(el, [false, true]);
-//
-//            _.each(nodes, function (aNodes) {
-//                if (aNodes.get('type') === 'kb.ActorNode') {
-//                    var actorNodeParent = graph.getNeighbors(aNodes, [true, false]);
-//                    aNodes.attr('./display', 'block');
-//                    console.log("parents = ", actorNodeParent);
-//                    _.each(actorNodeParent, function (actNodeParent) {
-//                        actNodeParent.attr('./display', 'block');
-//                    });
-//                } else {
-//                    aNodes.attr('./display', 'none');
-//                }
-//            });
-//
-//        }
-//    });
-//}
+
 //function that shows all knowledge nodes on the graph when clicked
 function drawAllKnowledgeNodes(data) {
-
-//    if (data==='false'){ 
-    //var parentNodes=[];
+    
     _.each(this.graph.getElements(), function (el) {
         if (data === 'false') {
-            //var links = graph.getConnectedLinks(el, [false,true]);
-//           if(el.get('type') !== "kb.knowledge" && el.get('type') !== "kb.ActorNode"){
-//           var nodes = graph.getNeighbors(el, [false,true]);
-////           _.each(links,function(kLink){
-////              
-////                if (kLink.get('type') === "kb.MediaLink"){
-////                    kLink.attr('./display', 'block');
-////                    kLink.remove(); 
-////                    graph.addCell(kLink);
-////                }  
-////            });
-//             _.each(nodes,function(kNode){
             if (el.get('type') === "kb.Knowledge") {
                 el.attr('./display', 'block');
             }
-////                    kNode.remove();
-////                    graph.addCell(kNode);
-////                    var edge = new joint.shapes.kb.MediaLink ({
-////                        source: { id: el.id },
-////                        target: { id: kNode.get('id') },
-////                        attrs:{
-////                            '.connection': {},
-////                            '.marker-target':{},
-////                            '.':{display:'block'}
-////                        }
-////                    });
-////                    graph.addCell(edge);
-//                } 
-//            });
-//           }
-
         } else {
             if (el.get('type') === "kb.Knowledge") {
                 el.attr('./display', 'none');
@@ -2916,8 +2787,8 @@ function drawAllKnowledgeNodes(data) {
 
 
 
-}
-;
+};
+
 //when the switch is turned on set the gloabl variable getCausalEvidence to true and false when off 
 $(".getCausalEvidenceSummarySwitch").on('click', function() {
   //determine if the switch is on or off
@@ -3222,32 +3093,24 @@ var count =1;
 });}
     }
 
-//function that shows all knowledge nodes on the graph when clicked
+//function that shows all Actor nodes and Edges on the graph when clicked
 function drawAllActorNodes(data) {
 
     _.each(this.graph.getElements(), function (aNode) {
         links = graph.getConnectedLinks(aNode, [false, true]);
-//        nodes = graph.getNeighbors(el, [false, true]);
         if (data === 'false') {
-//            _.each(nodes, function(aNode){
             if (aNode.get('type') === "kb.ActorNode") {
                 aNode.attr('./display', 'block');
             }
-//            });
-//            
-
             _.each(links, function (aLinks) {
                 if (aLinks.get('type') === "kb.ActorLink") {
                     aLinks.attr('./display', 'block');
                 }
             });
         } else {
-//            _.each(nodes, function(aNode){
             if (aNode.get('type') === "kb.ActorNode") {
                 aNode.attr('./display', 'none');
             }
-//            });
-
             _.each(links, function (aLink) {
                 if (aLink.get('type') === "kb.ActorLink") {
                     aLink.attr('./display', 'none');
@@ -3634,28 +3497,18 @@ function displayActorNodes(actorNodeData) {
 
 
 function displayNodeData(nodeData) {
-    //remove the previous contents of the div
-    $('.displayNodeData').empty();
     //make the button visable
     $(".displayNodeDataButton").css('display', 'block');
     var x = 0;
-    for (x in nodeData) {
-
-    }
-    ;
-//     $( ".displayNodeData" ).css('padding-bottom','10px');
-    //append each data prpertyy to the displayer
-
+    //append each data property to the displayer
     for (x in nodeData) {
         if (x !== "_type" && x !== "_id" && x !== "xcoord" && x !== "ycoord") {
-            $(".displayNodeData").append($('<div class="form-group"><br><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + nodeData[x] + '</textarea></div>'));
+            $(".displayNodeData").append($('<div class="form-group"><br>\n\
+            <label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label>\n\
+        <textarea class="form-control" rows="auto" id="comment">' + nodeData[x] + '</textarea></div>'));
         }
     }
-    ;
-//        $( ".displayNodeData" ).append($('<div class="form-group" style="padding-top:10px;"><br><label for="usr">&nbsp;&nbsp;Name</label><textarea class="form-control" rows="auto" id="comment">'+nodeData.name+'</textarea></div>'));
-//        $( ".displayNodeData" ).append($('<div class="form-group"><br><label for="usr">&nbsp;&nbsp;Descritpion</label><textarea class="form-control" rows="auto" id="comment">'+nodeData.description+'</textarea></div>'));
-//        $( ".displayNodeData" ).append($('<div class="form-group><br><label for="usr">&nbsp;&nbsp;Category</label><textarea class="form-control" rows="auto" id="comment">'+nodeData.category+'</textarea></div>'));
-}
+ }
 //
 //function displayNodeKnowledge(knowledgeData){
 //    
@@ -3687,8 +3540,7 @@ function displayNodeData(nodeData) {
 //Dynamically add elements will review
 
 function displayNodeKnowledge(knowledgeData) {
-    //remove the previous contents of the div
-    $('.displayKnowledgeperNode').empty();
+   
     //make the button visable
     $(".displayKnowledgeForNodeButton").css('display', '');
 
@@ -3699,10 +3551,8 @@ function displayNodeKnowledge(knowledgeData) {
         var j = 1;
         var x = 0;
         var count = 1;
-
         $(".displayKnowledgeperNode").append($('<div href="#item-' + i + '" class="list-group-item" data-toggle="collapse"><i class="glyphicon glyphicon-chevron-right"></i><a href="www.someURL.de">' + knowledge[0].kGroup + '</a><span class="badge">' + knowledge.length + '</span>'));
         $(".displayKnowledgeperNode").append($('<div href="#item-' + i + '.' + i + '" class="list-group collapse knowledgeItemNumber' + i + '" style="padding-left:20px; padding-right:20px;background-color:white" id="item-' + i + '">'));
-//        $( ".displayKnowledgeperNode" ).append($('<div class="list-group collapse hiddenKnowledgeItemNumber'+i+'" style="padding-left:20px; padding-right:20px;background-color:white" id="item-'+i+'.'+i+'""><a href="#">Click to sahite talk</a>'));
         //for each specific knowledge type render each article
         _.each(knowledge, function (k) {
             $(".knowledgeItemNumber" + i + "").append($('<span class="badge">' + j + '</span> <br>'));
@@ -3717,21 +3567,14 @@ function displayNodeKnowledge(knowledgeData) {
                         if (count === (Object.keys(k).length)) {
                             $(".knowledgeItemNumber" + i + "").append($('<div class ="viewExtraKnowledge" style="padding-left:10px; padding-bottom:10px;"><a href="#">Click to view more details....</a></div>'));
                         }
-                    }
-//            $( ".itemNumber"+i+"" ).append($('<div class="form-group"> <label for="usr">Description</label><p contenteditible ="false" ><textarea class="form-control" rows="auto" id="comment">'+k.description+'</textarea></p></div>'));
-//            $( ".itemNumber"+i+"" ).append($('<div class="form-group"> <label for="usr">Url:&nbsp;&nbsp;</label><a href="'+k.resourceURL+'" target="_blank">Click to see webpage</a></div>'));
-                }
-                ;
+                    }}
                 count++;
             }
-            ;
-//        $( ".displayKnowledgeperNode" ).append($('<a href="#">Click to sahite talk</a>'));
-            $(".knowledgeItemNumber" + i + "").append('<hr/>');//line break to diffrencaite between articles
-
+            //line break to differentcaite between articles
+            $(".knowledgeItemNumber" + i + "").append('<hr/>');
             j++;
         });
         i++;
-//          j++;
     });
 }
 

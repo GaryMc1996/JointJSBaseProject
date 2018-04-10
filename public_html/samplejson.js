@@ -2875,10 +2875,7 @@ function displayCausalEvidence(startNode,endNode) {
         var casualEvidence = causalEvidence;
         _.each(casualEvidence, function (parentToParent) {
             _.each(parentToParent.evidence,function(causalEvidenceArray){
-//                _.each(causalEvidenceArray,function(casualEvidence){
                     evidence.push(causalEvidenceArray);
-//                });
-               
             });
         });
     //iterate overy every Knowledge node attached and determine how many of each node type occur 
@@ -2937,28 +2934,9 @@ function displayCausalEvidence(startNode,endNode) {
     displayCausalKnowledge(knowledgeData);
     }
     
-$('.viewCausalSummry').unbind("click").on('click', function() {
-//    graph.get('cells').find(function (cell) {
-//       cell.unhighlight(); 
-//    });
+$('.viewCausalSummary').unbind("click").on('click', function() {
 var count =1;
-//    (new joint.ui.Popup({
-//        content: function(el) {
-//            var graph = new joint.dia.Graph;
-//            var paper = new joint.dia.Paper({
-//             
-//                width: 800,
-//                height: 550,
-//                gridSize: 1,
-//                model: graph
-//              
-//            });
-//            
-//            $(el).append(paper.el);
-//            //append x button 
-//            $(el).append($('<a href="#"><span class="glyphicon glyphicon-remove pull-right closeCausalSummaryPopup" style=" position: absolute;top: 2px;right: 2px; font-size: 40px;"></span> </a>'));
-        var ctx = document.getElementById('myChart').getContext('2d');
-//        $('.displayKnowledgeSummarychart').append($('<a href="#"><span class="glyphicon glyphicon-remove pull-right"></span>hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh </a>'));
+var ctx = document.getElementById('myChart').getContext('2d');
         $('.displayKnowledgeSummarychart').css("display","");
         var chart = new Chart(ctx, {
             // Bar chart
@@ -2993,16 +2971,7 @@ var count =1;
       ]
     },
     options: {
-//      events: ['click'],
       legend: { display: false },
-      animation: {
-                onComplete: function () {
-                    // set the PDF printing trigger when the animation is done
-                    // to have this working, the phantom-pdf menu in the left must
-                    // have the wait for printing trigger option selected
-                    window.JSREPORT_READY_TO_START = true;
-                }
-            },
       title: {
         display: true,
         text: 'Supporting Causal Evidence'
@@ -3029,67 +2998,10 @@ var count =1;
             console.log("button data = ",".name"+label+"");
             $(".name"+label+"").click();
         };
-//           document.getElementById("printChart").addEventListener("click",function(){
-//               
-//               var win=window.open();
-//    win.document.write("<br><img src='"+document.getElementById('myChart').toDataURL()+"'/>");
-//    win.print();
-//    win.location.reload();
-////               console.log("clck detected  chart = ", chart);
-////    	chart.print();
-////  var restorepage = document.body.innerHTML;
-////  var printcontent = document.getElementById("myChart").innerHTML;
-////  console.log("print  = ",restorepage);
-////  document.body.innerHTML = printcontent;
-////  window.print();
-////  document.body.innerHTML = restorepage;
-////$(".myChart").printElement();
-//
-//var dataUrl = document.getElementById('myChart').toDataURL(); //attempt to save base64 string to server using this var  
-//console.log('dataurl =',dataUrl);
-//    var windowContent = '<!DOCTYPE html>';
-//    windowContent += '<html>'
-//    windowContent += '<head><title>Print canvas</title></head>';
-//    windowContent += '<body>'
-//    windowContent += '<img src="' + dataUrl + '">';
-//    console.log(windowContent);
-//    windowContent += '</body>';
-//    windowContent += '</html>';
-//    var printWin = window.open('','','width=340,height=260');
-//    printWin.document.open();
-//    printWin.document.write(windowContent);
-//    printWin.document.close();
-//    printWin.focus();
-//    printWin.print();
-//    printWin.close();
-//    });  
      	document.getElementById("exportChart").addEventListener("click",function(){
     	var ss =chart.toBase64Image();
-//        var tg = chart.toDataURL();
-//        console.log("tg = ",tg);
-//        window.open("data:application/pdf;base64," +ss);
         window.location.href = 'data:application/octet-stream;' + ss;
-//(this).href = ss
-//    (this).download = "mypainting.png";
     });  
-
-//console.log("chart rendered = ", chart );
-     
-////if the user clicks the large X on the popup it closes the window
-//$('.closeCausalSummaryPopup').unbind("click").on('click', function() {
-//
-//    joint.ui.Popup.close();
-//
-//});
-//
-////canvg('canvas', $(".paper-navigator").html());
-////var img = canvas.toDataURL("image/png");
-////console.log(img);
-//
-//});
-//    }
-    
-//    });
 });}
     }
 
@@ -3432,8 +3344,6 @@ $(".displayKnowledgeperNode").on('click', 'div.viewExtraKnowledge', function () 
     $(".hiddenKnowledge").css("display", "");
 });
 $(".displayNodeDataButton").click(function () {
-//   var buttonData =  $(".displayKnowledgeperNode");
-//   var buttonStatus = buttonData[0].attributes.style.nodeValue;
 //remove the display attribute from the knowledge div
     $(".displayNodeData").css("display", "");
 //as the user clicks the button the knowledge is toggled on adn off
@@ -3446,34 +3356,19 @@ $(".displayNodeDataButton").click(function () {
 
 
 $(".displayActorsDataButton").click(function () {
-//   var buttonData =  $(".displayKnowledgeperNode");
-//   var buttonStatus = buttonData[0].attributes.style.nodeValue;
 //remove the display attribute from the knowledge div
     $(".displayActorData").css("display", "");
-//as the user clicks the button the knowledge is toggled on adn off
+//as the user clicks the button the knowledge is toggled
     $(".displayActorData").collapse('toggle');
 //update the glyphcion    
     $('.glyphicon', this)
             .toggleClass('glyphicon-chevron-right')
             .toggleClass('glyphicon-chevron-down');
 });
-//$(".displayKnowledgeperNode").on('click',"div.list-group",function(){
-//    console.log("text area clicks");
-//    $('.glyphicon', this)
-//      .toggleClass('glyphicon-chevron-right')
-//      .toggleClass('glyphicon-chevron-down');   
-//    });
-//$("textarea").on('change',function(){
-//    console.log("slim odds");
-//    $('.glyphicon', this)
-//      .toggleClass('glyphicon-chevron-right')
-//      .toggleClass('glyphicon-chevron-down');   
-//});
-//    
+ 
 function displayActorNodes(actorNodeData) {
-    //remove the previous contents of the div
-    $('.displayActorData').empty();
     //make the button visable
+    console.log(actorNodeData);
     $(".displayActorsDataButton").css('display', 'block');
     var i = 0;
     _.each(actorNodeData, function (actor) {
@@ -3487,7 +3382,7 @@ function displayActorNodes(actorNodeData) {
                 $(".actorItemNumber" + i + "").append($('<div class="form-group" style="padding-top:10px;"><label style="text-transform:capitalize"for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + actor[x] + '</textarea></div>'));
             }
         }
-        $(".actorItemNumber" + i + "").append($('<hr/>'));//line break to diffrencaite between articles
+        $(".actorItemNumber" + i + "").append($('<hr/>'));//line break to diffrencaite between actors
 
         j++;
 
@@ -3497,6 +3392,8 @@ function displayActorNodes(actorNodeData) {
 
 
 function displayNodeData(nodeData) {
+    //remove the previous contents of the div
+    $('.displayActorData').empty();
     //make the button visable
     $(".displayNodeDataButton").css('display', 'block');
     var x = 0;
@@ -3540,19 +3437,20 @@ function displayNodeData(nodeData) {
 //Dynamically add elements will review
 
 function displayNodeKnowledge(knowledgeData) {
-   
     //make the button visable
     $(".displayKnowledgeForNodeButton").css('display', '');
-
     var i = 0;
     var j = 1;
     //for each type of data create a list group to represent it
     _.each(knowledgeData, function (knowledge) {
         var j = 1;
         var x = 0;
-        var count = 1;
-        $(".displayKnowledgeperNode").append($('<div href="#item-' + i + '" class="list-group-item" data-toggle="collapse"><i class="glyphicon glyphicon-chevron-right"></i><a href="www.someURL.de">' + knowledge[0].kGroup + '</a><span class="badge">' + knowledge.length + '</span>'));
-        $(".displayKnowledgeperNode").append($('<div href="#item-' + i + '.' + i + '" class="list-group collapse knowledgeItemNumber' + i + '" style="padding-left:20px; padding-right:20px;background-color:white" id="item-' + i + '">'));
+        $(".displayKnowledgeperNode").append($('<div href="#item-' + i + '" class="list-group-item" data-toggle="collapse">\n\
+            <i class="glyphicon glyphicon-chevron-right"></i><a href="www.someURL.de">' + knowledge[0].kGroup + '</a>\n\
+            <span class="badge">' + knowledge.length + '</span>'));
+        
+        $(".displayKnowledgeperNode").append($('<div href="#item-' + i + '.' + i + '" class="list-group collapse \n\
+        knowledgeItemNumber' + i + '" style="padding-left:20px; padding-right:20px;background-color:white" id="item-' + i + '">'));
         //for each specific knowledge type render each article
         _.each(knowledge, function (k) {
             $(".knowledgeItemNumber" + i + "").append($('<span class="badge">' + j + '</span> <br>'));
@@ -3563,12 +3461,8 @@ function displayNodeKnowledge(knowledgeData) {
                     } else if (x === 'name' || x === 'description' || x === 'rating') {
                         $(".knowledgeItemNumber" + i + "").append($('<div class="form-group" style="padding-top:10px;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + k[x] + '</textarea></div>'));
                     } else {
-                        $(".knowledgeItemNumber" + i + "").append($('<div class="form-group hiddenKnowledge" style="padding-top:10px; display:none;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + k[x] + '</textarea></div>'));
-                        if (count === (Object.keys(k).length)) {
-                            $(".knowledgeItemNumber" + i + "").append($('<div class ="viewExtraKnowledge" style="padding-left:10px; padding-bottom:10px;"><a href="#">Click to view more details....</a></div>'));
-                        }
+                        $(".knowledgeItemNumber" + i + "").append($('<div class="form-group hiddenKnowledge" style="padding-top:10px;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + k[x] + '</textarea></div>'));
                     }}
-                count++;
             }
             //line break to differentcaite between articles
             $(".knowledgeItemNumber" + i + "").append('<hr/>');
@@ -3579,7 +3473,7 @@ function displayNodeKnowledge(knowledgeData) {
 }
 
 
-function displayCausalKnowledge(knowledgeData) {
+function displayCausalKnowledge(causalData) {
     
     //remove the previous contents of the div
     $('.displayKnowledgeperNode').empty();
@@ -3597,8 +3491,7 @@ function displayCausalKnowledge(knowledgeData) {
     var i = 0;
     var j = 1;
     //for each type of data create a list group to represent it
-       
-    _.each(knowledgeData, function (knowledge) {
+    _.each(causalData, function (knowledge) {
         var j = 1;
         var x = 0;
         var count = 1;
@@ -3628,7 +3521,7 @@ function displayCausalKnowledge(knowledgeData) {
         });
         i++;
     });
-     $(".viewCausalSummry").css('display', '');
+     $(".viewCausalSummary").css('display', '');
 }
 //$(".viewCausalSummry").click(function () {
 //   console.log("button works"); 

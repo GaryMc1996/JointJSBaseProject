@@ -2030,8 +2030,15 @@ var smallJSONData = {
 };
 
 
-
+window.onload = function(){
+ setTimeout(function(){
+  drawNavigator();
+  drawAllKnowledge();
+ }, 1);
+};
 var parentNodes = [];
+var pageLoadTimer;
+//console.log(pageLoadTimer);
 var length = smallJSONData.vertices.length;
 var getCausalEvidence=false;
 var icons = joint.shapes.kb.icons;
@@ -2055,8 +2062,6 @@ var impactAmount = 0;
 var welfareAmount = 0;
 var responseAmount = 0;
 var max = 0;
-//var height = $('.paper-container').width();
-//var width =  $('.paper-container').width();
 
 for (verticesCount = 0; verticesCount < length; verticesCount++)
 {
@@ -2126,7 +2131,6 @@ var paper = new joint.dia.Paper({
     height: height,
     gridSize: 10,
     model: graph,
-    //async: true,
     linkPinning: false,
     drawGrid: true,
     interactive: false
@@ -2134,14 +2138,25 @@ var paper = new joint.dia.Paper({
 //
 var paperScroller = new joint.ui.PaperScroller({
     paper: paper,
-    //autoResizePaper: true
+//    autoResizePaper: true
 });
 
 $('.paper-container').append(paperScroller.render().el);
 // this.paperScroller.center();
 
+//
+//var navigato = this.navigato = new joint.ui.Navigator({
+//    paperScroller: this.paperScroller,
+//    width: 250,
+//    height: 235,
+//    padding: 10,
+//    zoomOptions: {max: 5, min: 0.2}
+//});
+//navigato.$el.appendTo('.paper-navigator');
+//navigato.render();
 
-var navigato = this.navigato = new joint.ui.Navigator({
+function drawNavigator(){
+    var navigato = this.navigato = new joint.ui.Navigator({
     paperScroller: this.paperScroller,
     width: 250,
     height: 235,
@@ -2150,38 +2165,7 @@ var navigato = this.navigato = new joint.ui.Navigator({
 });
 navigato.$el.appendTo('.paper-navigator');
 navigato.render();
-
-
-
-//paper.on('cell:pointerclick', function(cellView) {
-//    cellView.highlight();
-//    var nodes =[];
-//    var links =[];
-//    graph.get('cells').find(function(cell) {
-//        if (cell.id === cellView.model.id){
-//           
-//            nodes = graph.getNeighbors(cell, cell.outbound);
-//            links = graph.getConnectedLinks(cell, cell.outbound);
-//            _.each(nodes,function(kNode){
-//                if (kNode.get('type') === "chart.Pie"){
-//                    kNode.attr('./visibility', 'visable');
-//                    console.log("fff");
-//                }
-//            });
-//            
-//            _.each(links,function(kLink){
-//                if (kLink.get('type') === "kb.MediaLink"){
-//                    kLink.attr('./visibility', 'visable');
-//                }
-//            });
-////            rating = (cell.get('series')["0"].data["0"].value);
-////            rating = (cell.get('series')["0"].data["7"].value);
-////            if (rating !==0){
-////                console.log(rating);["0"].attributes
-////            }
-//        }
-//    });
-//});
+}
 
 paper.on('cell:pointerdown', function (cellView) {
     
@@ -2635,26 +2619,8 @@ for (edgesCount; edgesCount < edgesLength; edgesCount++) {
             graph.addCell(newCanvasEdge);
             //add datrabaseid to the link evidnce node to allow knowledge and actors to be connected to it.
             newCanvasEdge.setup(smallJSONData.edges[edgesCount]._inV);
-//        }
     }
 }
-//            if ( smallJSONData.edges[edgesCount].linkType === 'A' )
-//            {
-//                // Find the source id of the causal relationship
-//                sourceCanvasId = getCanvasIdByDatabaseId(smallJSONData.edges[edgesCount]._outV, this.graph);
-//                positionActorNode(smallJSONData.edges[edgesCount]._outV,smallJSONData.edges[edgesCount]._inV,actorNodes,this.graph);
-//                targetCanvasId = getCanvasIdByDatabaseId(smallJSONData.edges[edgesCount]._inV, this.graph);
-//                newCanvasEdge = new joint.shapes.kb.ActorLink ({
-//                     source: { id: sourceCanvasId },
-//                     target: { id: targetCanvasId },
-//                     attrs:{
-//                         '.connection': { stroke: '#600', 'stroke-width': 4 },
-//                     }
-//                 });
-//                  graph.addCell(newCanvasEdge);
-//                newCanvasEdge.setup();
-//                //positionActorNode(sourceCanvasId,actorNodes,this.graph);
-//            }
     if (smallJSONData.edges[edgesCount].linkType === 'S')
     {
         // Find the source id of the causal relationship
@@ -2667,12 +2633,11 @@ for (edgesCount; edgesCount < edgesLength; edgesCount++) {
                 '.connection': {stroke: '#600', 'stroke-width': 4}
             }
         });
-        //newCanvasEdge.attr("./display","none");
         graph.addCell(newCanvasEdge);
 
     }
 }
-
+function drawAllKnowledge(){
 //construct kNodes
 var knowledgeNodeId = 0;
 _.each(smallJSONData.vertices, function (node) {
@@ -2680,7 +2645,6 @@ _.each(smallJSONData.vertices, function (node) {
     _.each(smallJSONData.edges, function (link) {
         if (link.linkType === "A" && link._outV === node._id) {
             positionActorNode(link._outV, link._inV, actorNodes, this.graph);
-
         }
         //if link of type K and it source node is the current node
         if (link.linkType === "K" && link._outV === node._id) {
@@ -2697,7 +2661,7 @@ _.each(smallJSONData.vertices, function (node) {
         displayKnowledge(knowledgePerNode, node, knowledgeNodeId++, this.graph);
     }
 });
-
+}
 
 function positionActorNode(sourceNode, targetNode, actorNodes, graph) {
     var x = 0;
@@ -2783,10 +2747,6 @@ function drawAllKnowledgeNodes(data) {
             }
         }
     });
-
-
-
-
 };
 
 //when the switch is turned on set the gloabl variable getCausalEvidence to true and false when off 
@@ -2805,6 +2765,7 @@ $(".getCausalEvidenceSummarySwitch").on('click', function() {
         $(".findCausalDataStartToFinish").css("display","none");
     }
 });
+
 function displayCausalEvidence(startNode,endNode) {
     if(startNode === "startNode" || endNode === "finishNode"){
         window.alert("Must select both a start and end node");
@@ -2934,7 +2895,7 @@ function displayCausalEvidence(startNode,endNode) {
     displayCausalKnowledge(knowledgeData);
     }
     
-$('.viewCausalSummary').unbind("click").on('click', function() {
+$('.viewCausalSummaryButton').unbind("click").on('click', function() {
 var count =1;
 var ctx = document.getElementById('myChart').getContext('2d');
         $('.displayKnowledgeSummarychart').css("display","");
@@ -3032,6 +2993,7 @@ function drawAllActorNodes(data) {
 
     });
 }
+//draw knowledge in a cirlce around parent nodes
 function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph) {
 
     var parentX;
@@ -3211,8 +3173,6 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
         }
         i++;
     }
-
-
 }
 
 //draw kNode with number of evidence on the right hand side
@@ -3390,7 +3350,6 @@ function displayActorNodes(actorNodeData) {
     });
 }
 
-
 function displayNodeData(nodeData) {
     //remove the previous contents of the div
     $('.displayActorData').empty();
@@ -3406,35 +3365,6 @@ function displayNodeData(nodeData) {
         }
     }
  }
-//
-//function displayNodeKnowledge(knowledgeData){
-//    
-//    //remove the previous contents of the div
-//    $('.displayKnowledgeperNode').empty();
-//    //make the button visable
-//    $( ".displayKnowledgeForNodeButton" ).css('display','block');
-//     
-//     var i=0;
-//     //for each type of data create a list group to represent it
-//    _.each(knowledgeData, function(knowledge){
-//         var j=1;
-//        $( ".displayKnowledgeperNode" ).append($('<div href="#item-'+i+'" class="list-group-item" data-toggle="collapse"><i class="glyphicon glyphicon-chevron-right"></i><a href="www.someURL.de">'+knowledge[0].name+'</a><span class="badge">'+knowledge.length+'</span>'));
-//        $( ".displayKnowledgeperNode" ).append($('<div class="list-group collapse knowledgeItemNumber'+i+'" style="padding-left:20px; padding-right:20px;background-color:white" id="item-'+i+'">'));
-////for each specific knowledge type render each article
-//    _.each(knowledge,function(k){
-//            $( ".knowledgeItemNumber"+i+"" ).append($('<div class="form-group" style="padding-top:10px;"><span class="badge">'+j+'</span> <br><label for="usr">&nbsp;&nbsp;Name</label><textarea class="form-control" rows="auto" id="comment">'+k.name+'</textarea></div>'));
-//            $( ".knowledgeItemNumber"+i+"" ).append($('<div class="form-group"> <label for="usr">Description</label><p contenteditible ="false" ><textarea class="form-control" rows="auto" id="comment">'+k.description+'</textarea></p></div>'));
-//            $( ".knowledgeItemNumber"+i+"" ).append($('<div class="form-group"> <label for="usr">Url:&nbsp;&nbsp;</label><a href="'+k.resourceURL+'" target="_blank">Click to see webpage</a></div>'));
-//            $( ".knowledgeItemNumber"+i+"" ).append($('<hr/>'));//line break to diffrencaite between articles
-//    j++;
-//    });
-//        i++;
-//    }); 
-//}
-
-
-////////
-//Dynamically add elements will review
 
 function displayNodeKnowledge(knowledgeData) {
     //make the button visable
@@ -3472,7 +3402,7 @@ function displayNodeKnowledge(knowledgeData) {
     });
 }
 
-
+//appedn Causal knowledeg into the knowledge viewer on the right hand side
 function displayCausalKnowledge(causalData) {
     
     //remove the previous contents of the div
@@ -3521,184 +3451,5 @@ function displayCausalKnowledge(causalData) {
         });
         i++;
     });
-     $(".viewCausalSummary").css('display', '');
+     $(".viewCausalSummaryButton").css('display', '');
 }
-//$(".viewCausalSummry").click(function () {
-//   console.log("button works"); 
-//});
-//$('.viewCausalSummry').unbind("click").on('click', function() {
-////    console.log("sent her how many times!!!!");
-//    (new joint.ui.Popup({
-//        content: function(el) {
-//            var graph = new joint.dia.Graph;
-//            var paper = new joint.dia.Paper({
-//             
-//                width: 800,
-//                height: 550,
-//                gridSize: 1,
-//                model: graph
-//              
-//            });
-//            $(el).append(paper.el);
-//            var chart = new joint.shapes.chart.Plot({
-//        position: { x: 80, y: 80 },
-//        size: { width: 650, height: 250 },
-//        series: [
-//            { name: 'knowledge', label: 'Knowledge (Number of Articles)', 
-//             bars: { barWidth: .5 }, 
-//             data: 
-//                [
-//                 { x: 1, y: 68 }, 
-//                 { x: 2, y: 47 }, 
-//                 { x: 3, y: 65 }, 
-//                 { x: 4, y: 52 }, 
-//                 { x: 5, y: 0 }, 
-//                 { x: 6, y: 70 }, 
-//                 { x: 7, y: 74 }, 
-//                 { x: 8, y: 69 }    
-//             ] },
-//            ],
-//        axis: {
-//            'x-axis': {
-//                tickFormat: function(tick) {
-//                    return ({
-//                        '1': 'Visual and Performance Arts',
-//                        '2': 'Education and Public Events',
-//                        '3': 'Non Academic Press',
-//                        '4': 'Scientific Print Media',
-//                        '5': 'Broadcast Media',
-//                        '6': 'Film',
-//                        '7': 'Other',
-//                        '8': 'Online Digital Media'
-//                      
-//                    })[tick];
-//                }
-//            },
-//            'y-axis': { ticks: 5, tickFormat: '.0f' }
-//        },
-//        padding: { top: 30, bottom: 50, left: 60, right: 120 },
-//        attrs: {
-//            '.caption': { text: 'Number of Articles Supporting Causal Links', fill: '#6A9E04', 'font-weight': 'bold', 'ref-y': -50, ref: '.background', 'ref-x': .5 },
-//            '.data .knowledge path': { fill: '#4572A7', stroke: '#4572A7' },
-//            '.data .avg-rain-days path': { stroke: '#FF8533', 'stroke-width': 2 },
-//            '.x-axis text': { transform: 'translate(-10, 100) rotate(-90)',fill: 'black', 'font-size':14},
-//            '.avg-high .point circle': { r: 3, fill: 'white', opacity: 1, stroke: '#FF8533' },
-//            '.avg-low .point circle': { r: 3, fill: 'white', opacity: 1, stroke: '#4572A7' },
-//            '.knowledge .point': { display: 'none' },
-//            '.avg-rain-days .point circle': { r: 3, fill: 'white', opacity: 1, stroke: '#FF8533' }
-//
-//        }
-//    });
-//        console.log("maybe we can do it here",chart);
-//         console.log("series befor e",chart.attributes.series["0"].data);
-//////        series=[];
-//        var dp = chart.attributes.series["0"].data;
-//        var data=[];
-//        var negativeValue = 0;
-//         _.each(dp,function(dppoints){
-//             if(dppoints.y === 0)
-//             {
-//                 negativeValue= negativeValue+1;
-//             }
-//                if(dppoints.y !== 0){
-//                    console.log("checking dp");
-//                    dppoints.x = dppoints.x - negativeValue;
-//                  data.push(dppoints);
-//            }  
-//       });
-//       console.log("updated points",data);
-//       
-//       delete chart.attributes.series["0"].data;
-//       var point =chart.attributes.series;
-//       console.log("point =" ,point);
-//       _.each(point ,function(insert){
-//           console.log("whaaa", insert);
-//           insert.data = data;
-////           insert.add({'data':data});
-//       });
-////       console.log("hello",chart);
-////       console.log("chart after =",chart);
-////       this.$set(chart.attributes.series["0"].push({'data':data}));
-////       console.log("pls work =",chart);
-////        .attributes.series["0"].data
-//////         console.log("orig series= ",series);
-////        _.each(series, function(newSeries){
-////            console.log("outside inner ",newSeries);
-////            _.each(newSeries.data,function(dp){
-////                if(dp.y !== 0){
-////                    console.log("checking dp");
-////                  data.push(dp);
-////            }
-////             
-////       });
-////        });
-////        console.log("checking if dat popultes",data);
-////        delete series[0].data;
-////        console.log("hopefully no data",series);
-////        series.push(data);
-////        console.log("hopefully we have data again and the graph draws",series);
-////        
-////        console.log("should be full again",series);
-//    chart.legendPosition('nw');
-//            graph.addCells(chart);
-//            console.log(")testing how many time si hit this place");
-//        },
-//        target: this,
-//        autoClose:true
-//    })).render();
-//    return false;
-//});
-//
-//$('#textarea').on('click ', function () {
-//    console.log("dddd");
-//
-//    content = $(this).val();
-//
-//    content = content.replace(/\n/g, '<br>');
-//    hiddenDiv.html(content + '<br class="lbr">');
-//
-//    $(this).css('height', hiddenDiv.height());
-//
-//});
-//function colasapse(){
-//    console.log("ddddd");
-//    $(".displayKnowledgeperNode").collapse('hide');
-//}
-////function that determines how many unique knowledge nodes are linked to a particular node 
-//function countUnique(iterable) {
-//  return new Set(iterable).size;
-//}
-
-
-
-//function displddddayNodeKnowledge(data){
-////     console.log(data);
-//     $('.displayKnowledgeperNode').empty();
-//     //var $temp = $('.displayKnowledgeperNode');
-//     $('.classification-container').empty();
-//     $( ".classification-container" ).append($('<a data-toggle="collapse" href="#collapse1" class = "blahj">Expand Knowledge</a>'));
-//     $(".blahj").trigger("click");
-//     var i =0;
-//    _.each(data, function(knowledge){
-//    $( ".displayKnowledgeperNode" ).append($('<li class="parentKnowledgeGroups" data-toggle="collapse">'+knowledge[0].kGroup + '<span class="badge">'+knowledge.length+'</span></li>'));
-////        _.each(knowledge,function(k){
-//////            console.log("dddddd",k);
-////            string = k.name;
-////            console.log("name = ", string);
-////            $( ".parentKnowledgeGroups"+i+"" ).append($('<div class="form-group"> <label for="usr">Name</label><textarea class="form-control" rows="2" id="comment">'+k.name+'</textarea></div>'))
-////        });
-////        i++;
-//    });
-////    $(".blahj").trigger("click");
-////    $(".blahj").collapse('hide');
-//}
-// 
-
-//$('.getCausalEvidenceSummaryButton').click(function () {
-//
-//    console.log("button status", ($('.getCausalEvidenceSummaryButton')));
-//
-//});
-
-
- 

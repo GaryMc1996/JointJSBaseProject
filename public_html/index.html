@@ -172,12 +172,14 @@ and open the template in the editor.
                         </ul>
                         <div class="navbar-nav">
                         <!--Button to show all knowledge nodes-->
-                        <button class="btn btn-danger navbar-btn activateKnowledgeNodesButton" data-toggle="button" aria-pressed="false" onclick="drawAllKnowledgeNodes(this.getAttribute('aria-pressed'));">
-                            Add Knowledge
+                        <button class="btn btn-danger navbar-btn activateKnowledgeNodesButton" data-toggle="button"
+                                aria-pressed="false" onclick="drawAllKnowledgeNodes(this.getAttribute('aria-pressed'));">
+                            Toggle Knowledge
                         </button>
                         <!--Button to show all Actor nodes-->
-                        <button class="btn btn-danger navbar-btn activateActorNodesButton" data-toggle="button" aria-pressed="false" onclick="drawAllActorNodes(this.getAttribute('aria-pressed'));">
-                            Add Actors
+                        <button class="btn btn-danger navbar-btn activateActorNodesButton" data-toggle="button" 
+                                aria-pressed="false" onclick="drawAllActorNodes(this.getAttribute('aria-pressed'));">
+                            Toggle Actors
                         </button>
                         <!--                        <button class="btn btn-danger navbar-btn activateActorNodesButton" data-toggle="button" aria-pressed="false" onclick="displayOnlyActorAndParent(this.getAttribute('aria-pressed'));">
                                                     Only Actors and Parent
@@ -228,7 +230,7 @@ and open the template in the editor.
                 <!--Button that when clicked by the user Expands the data for each node-->
                 <button type="button" class="btn btn-primary displayNodeDataButton" style="display:none; width:100%;" >
                     <span  class = "glyphicon glyphicon-chevron-right pull-left"></span>
-                    Display Data
+                    Toggle Data
                 </button>
                 <ul id="collapsableNodeDataViewer" class="list-group displayNodeData" style="display:none;">
                 </ul>
@@ -236,23 +238,23 @@ and open the template in the editor.
                 <!--Button that when clicked by the user Expands the knowledge for each node-->
                 <button type="button" class="btn btn-primary displayKnowledgeForNodeButton"  style="display:none; width:100%;" >
                     <span  class = "glyphicon glyphicon-chevron-right pull-left"></span>
-                    Display Knowledge
+                    Toggle Knowledge
                 </button>
                 <ul id="collapsableKnowledgeViewer" class="list-group displayKnowledgeperNode" style="display:none;">
                 </ul>
 
                 <button type="button" class="btn btn-primary displayActorsDataButton" style="display:none; width:100%;" >
                     <span  class = "glyphicon glyphicon-chevron-right pull-left"></span>
-                    Display Actor Data
+                    Toggle Actor Data
                 </button>
                 <ul id="collapsableActorDataViewer" class="list-group displayActorData" style="display:none;">
                 </ul>
-                <button type="button" class="btn btn-primary viewCausalSummry"  data-toggle="modal" data-target="#myModal" value= "off" style="display:none; width:100%;" >
+                <button type="button" class="btn btn-primary viewCausalSummaryButton"  data-toggle="modal" 
+                        data-target="#myModal" value= "off" style="display:none; width:100%;" >
                     Display Causal Summary Data
                 </button>
             </div>
             <!-- Trigger the modal with a button -->
-
             <!-- Modal -->
             <div id="myModal" class="modal fade" role="dialog">
                 <div class="modal-dialog">
@@ -307,7 +309,8 @@ and open the template in the editor.
         <script src="joint.format.svg.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
         <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+        <script src="joint.alg.dijkstra.js"></script>
+        <script src="joint.alg.priorityQueue.js"></script>
         <script src="samplejson.js"></script> 
-
     </body>
 </html>

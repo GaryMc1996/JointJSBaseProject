@@ -5106,7 +5106,6 @@ joint.dia.Graph = Backbone.Model.extend({
 
     // Get a cell by `id`.
     getCell: function(id) {
-
         return this.get('cells').get(id);
     },
 
@@ -5137,11 +5136,13 @@ joint.dia.Graph = Backbone.Model.extend({
 
     // Get all inbound and outbound links connected to the cell `model`.
     getConnectedLinks: function(model, opt) {
-
         opt = opt || {};
-
-        var inbound = opt.inbound;
-        var outbound = opt.outbound;
+//made changes to this code
+//        var inbound = opt.inbound;
+//        var outbound = opt.outbound;
+//////
+        var inbound = opt[0];
+        var outbound = opt[1];
         if (_.isUndefined(inbound) && _.isUndefined(outbound)) {
             inbound = outbound = true;
         }

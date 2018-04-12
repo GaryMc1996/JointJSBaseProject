@@ -2138,22 +2138,10 @@ var paper = new joint.dia.Paper({
 //
 var paperScroller = new joint.ui.PaperScroller({
     paper: paper,
-//    autoResizePaper: true
 });
 
 $('.paper-container').append(paperScroller.render().el);
-// this.paperScroller.center();
 
-//
-//var navigato = this.navigato = new joint.ui.Navigator({
-//    paperScroller: this.paperScroller,
-//    width: 250,
-//    height: 235,
-//    padding: 10,
-//    zoomOptions: {max: 5, min: 0.2}
-//});
-//navigato.$el.appendTo('.paper-navigator');
-//navigato.render();
 
 function drawNavigator(){
     var navigato = this.navigato = new joint.ui.Navigator({
@@ -2166,6 +2154,29 @@ function drawNavigator(){
 navigato.$el.appendTo('.paper-navigator');
 navigato.render();
 }
+
+// Presentational attributes.
+var attrs = {
+    elementDefault: {
+        text: { fill: '#fff', style: { 'text-shadow': '1px 1px 1px #999', 'text-transform': 'capitalize' } },
+        circle: { fill: '#feb663', stroke: 'white' }
+    },
+    elementSelected: {
+        circle: { fill: '#9687fe' }
+    },
+    elementHighlighted: {
+        circle: { fill: '#31d0c6' }
+    },
+    linkDefault: {
+        '.connection': {stroke: '#600', 'stroke-width': 4}
+    },
+    linkDefaultDirected: {
+        '.marker-target': { d: 'M 6 0 L 0 3 L 6 6 z' }
+    },
+    linkHighlighted: {
+        '.connection': { stroke: '#33334e', 'stroke-width': 6 }
+    }
+};
 
 paper.on('cell:pointerdown', function (cellView) {
     
@@ -2258,25 +2269,94 @@ if(getCausalEvidence===false){
 
     }
     if (getCausalEvidence === true) {
-        nodeType = cellView.model.attributes.type;
-        graph.get('cells').find(function (cell) {
-            if (cell.id === cellView.model.id) {
-                if (nodeType !== "kb.Rel" && nodeType !== "kb.Knowledge" && nodeType !== "kb.ActorNode") {
-                    cellView.highlight();
-                    if (document.getElementById("finishNode").value === "finishNodeId" && document.getElementById("startNode").value !== "startNodeId")
-                    {
-                        document.getElementById("finishNode").value = cell.attributes.databaseId;
-                        document.getElementById("finishNodeName").value = cell.attributes.nodeData.name;
-                    }
-                    if (document.getElementById("startNode").value === "startNodeId")
-                    {
-                        document.getElementById("startNode").value = cell.attributes.databaseId;
-                        document.getElementById("startNodeName").value = cell.attributes.nodeData.name;
-                    }
+//        nodeType = cellView.model.attributes.type;
+//        graph.get('cells').find(function (cell) {
+//            if (cell.id === cellView.model.id) {
+//                if (nodeType !== "kb.Rel" && nodeType !== "kb.Knowledge" && nodeType !== "kb.ActorNode") {
+//                    cellView.highlight();
+//                    if (document.getElementById("finishNode").value === "finishNodeId" && document.getElementById("startNode").value !== "startNodeId")
+//                    {
+//                        document.getElementById("finishNode").value = cell.attributes.databaseId;
+//                        document.getElementById("finishNodeName").value = cell.attributes.nodeData.name;
+//                    }
+//                    if (document.getElementById("startNode").value === "startNodeId")
+//                    {
+//                        document.getElementById("startNode").value = cell.attributes.databaseId;
+//                        document.getElementById("startNodeName").value = cell.attributes.nodeData.name;
+//                    }
+//
+//                }
+//            }
+//        });
+// Select source.
+var selected;
+var directed = true;
+//paper.on('cell:pointerdown', function(cellView) {
+ if (cellView.model.attributes.type !== "kb.Rel"){
+    if (cellView.model.isLink()) return;
+    if (selected) selected.attr(attrs.elementDefault);
+    (selected = cellView.model).attr(attrs.elementSelected);
+}
+//    hidePath();
+//});
 
-                }
-            }
-        });
+// Hover an element to select a target.
+paper.on('cell:pointerdown', function(cellView, evt) {
+    
+        console.log(cellView.model);
+    if (cellView.model.isLink() || cellView.model === selected) return;
+    if (selected) {
+        var path = graph.shortestPath(selected, cellView.model, { directed: directed });
+//        console.log("path =",path);
+        showPath(path);
+        console.log("befreo",cellView.model.attributes.type);
+        if (cellView.model.attributes.type !== "kb.Rel"){
+            console.log("after ",cellView.model.attributes.type);
+        cellView.model.attr(attrs.elementHighlighted);
+    }
+    
+}
+});
+
+// Deselect target.
+paper.on('cell:pointerdown', function(cellView, evt) {
+    if (cellView.model.isLink() || cellView.model === selected) return;
+    cellView.model.attr(attrs.elementDefault);
+//    hidePath();
+});
+
+// Helpers.
+
+var pathLinks = [];
+//
+//function hidePath() {
+//
+//    $('#path').text('');
+//    _.each(pathLinks, function(link) {
+//        link.attr(attrs.linkDefault);
+//        link.set('labels', []);
+//    });
+//}
+
+function showPath(path) {
+
+//    $('#path').text(path.join(' -> '));
+    for (var i = 0; i < path.length; i++) {
+        var curr = path[i];
+        var next = path[i + 1];
+        if (next) {
+            var link = graph.getCell([curr, next].sort().join());
+//            link.label(0, { position: .5, attrs: {
+//                text: { text: ' ' + (i + 1) + ' ', 'font-size': 10, fill: 'white' },
+//                rect: { rx: 8, ry: 8, fill: 'black', stroke: 'black', 'stroke-width': 5 }
+//            } });
+            pathLinks.push(link.attr(attrs.linkHighlighted));
+        }
+    }
+}
+
+
+
     }
 });
 //var startNode="";
@@ -2600,9 +2680,14 @@ for (edgesCount; edgesCount < edgesLength; edgesCount++) {
         newCanvasEdge = new joint.shapes.kb.CausalLink({
             source: {id: sourceCanvasId},
             target: {id: targetCanvasId},
-            attrs: {
-                '.connection': {stroke: '#600', 'stroke-width': 4},
-            }
+            attrs:{
+                '.connection': {stroke: '#600', 'stroke-width': 4}},
+             id: [sourceCanvasId,targetCanvasId].sort().join(),
+             labels:[0, { position: .5, attrs: {
+                text: { text: ' ' + "   "+ ' ', 'font-size': 10, fill: 'white' },
+                rect: { rx: 15, ry: 15, fill: 'white', stroke: 'black', 'stroke-width': 2 }
+            } }],
+//            databaseId:smallJSONData.edges[edgesCount]._inV
         });
 
 //                 // set the labels at either end of the node (optional)
@@ -2631,7 +2716,8 @@ for (edgesCount; edgesCount < edgesLength; edgesCount++) {
             target: {id: targetCanvasId},
             attrs: {
                 '.connection': {stroke: '#600', 'stroke-width': 4}
-            }
+            },
+            id: [sourceCanvasId,targetCanvasId].sort().join()
         });
         graph.addCell(newCanvasEdge);
 
@@ -2709,7 +2795,8 @@ function positionActorNode(sourceNode, targetNode, actorNodes, graph) {
                         target: {id: targetCanvasId},
                         attrs: {
                             '.connection': {stroke: '#600', 'stroke-width': 4}
-                        }
+                        },
+                        id: [sourceCanvasId,targetCanvasId].sort().join()
                     });
                     actorLink.attr('./display', 'none');
                     graph.addCell(actorLink);

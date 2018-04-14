@@ -2038,6 +2038,7 @@ window.onload = function(){
 };
 var parentNodes = [];
 var pageLoadTimer;
+var actorNodes = [];
 //console.log(pageLoadTimer);
 var length = smallJSONData.vertices.length;
 var getCausalEvidence=false;
@@ -2142,17 +2143,17 @@ var paperScroller = new joint.ui.PaperScroller({
 
 $('.paper-container').append(paperScroller.render().el);
 
-
+drawMainGraph();
 function drawNavigator(){
-    var navigato = this.navigato = new joint.ui.Navigator({
+    var navigator = this.navigator = new joint.ui.Navigator({
     paperScroller: this.paperScroller,
     width: 250,
     height: 235,
     padding: 10,
     zoomOptions: {max: 5, min: 0.2}
 });
-navigato.$el.appendTo('.paper-navigator');
-navigato.render();
+navigator.$el.appendTo('.paper-navigator');
+navigator.render();
 }
 
 // Presentational attributes.
@@ -2162,19 +2163,18 @@ var attrs = {
         circle: { fill: '#feb663', stroke: 'white' }
     },
     elementSelected: {
-        circle: { fill: '#9687fe' }
+        circle: { fill: '#9687fettt' }
     },
     elementHighlighted: {
-        circle: { fill: '#31d0c6' }
+        circle: { fill: '#31d0c66tt66' }
     },
     linkDefault: {
-        '.connection': {stroke: '#600', 'stroke-width': 4}
-    },
-    linkDefaultDirected: {
-        '.marker-target': { d: 'M 6 0 L 0 3 L 6 6 z' }
+        '.connection': {stroke: '#600', 'stroke-width': 4},
+        '.marker-target': { fill: '#600', stroke: '#663300', d: 'M 20 0 L 0 10 L 20 20 z' }
     },
     linkHighlighted: {
-        '.connection': { stroke: '#33334e', 'stroke-width': 6 }
+        '.connection': { stroke: '#33334e', 'stroke-width': 6 },
+        '.marker-target': { fill: '#33334e', stroke: '#663300', d: 'M 20 0 L 0 10 L 20 20 z' }
     }
 };
 
@@ -2288,55 +2288,66 @@ if(getCausalEvidence===false){
 //                }
 //            }
 //        });
+//        
 // Select source.
+//getNodesthing(cellView.model);
+
 var selected;
+var target;
+var option2=false;
 var directed = true;
+var count =1;
 //paper.on('cell:pointerdown', function(cellView) {
- if (cellView.model.attributes.type !== "kb.Rel"){
+
     if (cellView.model.isLink()) return;
-    if (selected) selected.attr(attrs.elementDefault);
+    if (selected) return;
     (selected = cellView.model).attr(attrs.elementSelected);
-}
+if(count ===1){
+      selected = cellView;
+      selected.highlight();
+      console.log("shuld nen hfgfdvfd",selected);
+      count++;
+      }
 //    hidePath();
 //});
 
 // Hover an element to select a target.
+//if(option2===false){
 paper.on('cell:pointerdown', function(cellView, evt) {
-    
-        console.log(cellView.model);
-    if (cellView.model.isLink() || cellView.model === selected) return;
-    if (selected) {
-        var path = graph.shortestPath(selected, cellView.model, { directed: directed });
-//        console.log("path =",path);
-        showPath(path);
-        console.log("befreo",cellView.model.attributes.type);
-        if (cellView.model.attributes.type !== "kb.Rel"){
-            console.log("after ",cellView.model.attributes.type);
-        cellView.model.attr(attrs.elementHighlighted);
+test(cellView);
+hidePath();
+    if (cellView.model.isLink()) return;
+    if(cellView.model === selected){
+        selected=null;
     }
-    
-}
+    target = cellView;
+    target.unhighlight();
+    if (selected) {
+        var path = graph.shortestPath(selected.model, target.model, { directed: directed });
+        showPath(path);
+//        target.highlight();
+        cellView.model.attr(attrs.elementHighlighted);
+        //call display evidence and send node id's to function
+        console.log(selected.model.attributes.databaseId);
+        displayCausalEvidence(selected.model.attributes.databaseId,cellView.model.attributes.databaseId);
+    }
 });
 
-// Deselect target.
-paper.on('cell:pointerdown', function(cellView, evt) {
-    if (cellView.model.isLink() || cellView.model === selected) return;
-    cellView.model.attr(attrs.elementDefault);
-//    hidePath();
+paper.on('blank:pointerdown', function(evt, x, y) {
+        hidePath();
+        selected.unhighlight();
 });
-
 // Helpers.
 
 var pathLinks = [];
-//
-//function hidePath() {
-//
-//    $('#path').text('');
-//    _.each(pathLinks, function(link) {
-//        link.attr(attrs.linkDefault);
-//        link.set('labels', []);
-//    });
-//}
+
+function hidePath() {
+
+    _.each(pathLinks, function(link) {
+        link.attr(attrs.linkDefault);
+        link.set('labels', []);
+    });
+}
 
 function showPath(path) {
 
@@ -2345,7 +2356,9 @@ function showPath(path) {
         var curr = path[i];
         var next = path[i + 1];
         if (next) {
+//             console.log("sending thsi request now ");
             var link = graph.getCell([curr, next].sort().join());
+//           console.log("what is returned ?",link);
 //            link.label(0, { position: .5, attrs: {
 //                text: { text: ' ' + (i + 1) + ' ', 'font-size': 10, fill: 'white' },
 //                rect: { rx: 8, ry: 8, fill: 'black', stroke: 'black', 'stroke-width': 5 }
@@ -2359,6 +2372,82 @@ function showPath(path) {
 
     }
 });
+function test(cellView){
+    console.log("what event does this fire for",cellView);
+}
+function getNodesthing(){
+var selected;
+var directed = true;
+var count =1;
+if(count===1){
+paper.on('cell:pointerdown', function(cellView) {
+console.log(cellView,count);
+    if (cellView.model.isLink()) return;
+//    if (selected) selected.attr(attrs.elementDefault);
+//    (selected = cellView.model).attr(attrs.elementSelected);
+      selected = cellView.model;
+    hidePath();
+});
+count++;
+}
+
+// Hover an element to select a target.
+
+paper.on('cell:mouseover', function(cellView, evt) {
+
+hidePath();
+//console.log("enter here", option2);
+    if (cellView.model.isLink()) return;
+    if(cellView.model === selected){
+        selected=null;
+    }
+    if (selected) {
+        var path = graph.shortestPath(selected, cellView.model, { directed: directed });
+        showPath(path);
+        cellView.model.attr(attrs.elementHighlighted);
+        //call display evidence and send node id's to function
+//        displayCausalEvidence(selected.databaseId,cellView.model.databaseId);
+    }
+});
+
+
+paper.on('blank:pointerdown', function(evt, x, y) {
+        hidePath();
+});
+// Helpers.
+
+var pathLinks = [];
+
+function hidePath() {
+
+    _.each(pathLinks, function(link) {
+        link.attr(attrs.linkDefault);
+        link.set('labels', []);
+    });
+}
+
+function showPath(path) {
+
+//    $('#path').text(path.join(' -> '));
+    for (var i = 0; i < path.length; i++) {
+        var curr = path[i];
+        var next = path[i + 1];
+        if (next) {
+//             console.log("sending thsi request now ");
+            var link = graph.getCell([curr, next].sort().join());
+//           console.log("what is returned ?",link);
+//            link.label(0, { position: .5, attrs: {
+//                text: { text: ' ' + (i + 1) + ' ', 'font-size': 10, fill: 'white' },
+//                rect: { rx: 8, ry: 8, fill: 'black', stroke: 'black', 'stroke-width': 5 }
+//            } });
+            pathLinks.push(link.attr(attrs.linkHighlighted));
+        }
+    }
+}
+
+
+
+    };
 //var startNode="";
 //var finishNode="";
 //var myHighlighter = false;
@@ -2370,8 +2459,9 @@ function showPath(path) {
 //        }
 //      }
 //    }
+function drawMainGraph(){
 var responseNodes = [];
-var actorNodes = [];
+//var actorNodes = [];
 var edgesCount = 0;
 var edgesLength = smallJSONData.edges.length;
 var targetCanvasId;
@@ -2683,13 +2773,15 @@ for (edgesCount; edgesCount < edgesLength; edgesCount++) {
             attrs:{
                 '.connection': {stroke: '#600', 'stroke-width': 4}},
              id: [sourceCanvasId,targetCanvasId].sort().join(),
-             labels:[0, { position: .5, attrs: {
-                text: { text: ' ' + "   "+ ' ', 'font-size': 10, fill: 'white' },
-                rect: { rx: 15, ry: 15, fill: 'white', stroke: 'black', 'stroke-width': 2 }
-            } }],
+//             labels:[0, { position: .5, attrs: {
+//                text: { text: ' ' + "   "+ ' ', 'font-size': 10, fill: 'white' },
+//                rect: { rx: 15, ry: 15, fill: 'white', stroke: 'black', 'stroke-width': 2 }
+//            } }],
+    
 //            databaseId:smallJSONData.edges[edgesCount]._inV
         });
-
+//        x= newCanvasEdge.attributes.labels[1].position;
+        
 //                 // set the labels at either end of the node (optional)
 //                newCanvasEdge.label(0, {attrs:{ text: { text: '' }}});
 //                newCanvasEdge.label(1, {attrs:{ text: { text: '' }}});
@@ -2704,6 +2796,7 @@ for (edgesCount; edgesCount < edgesLength; edgesCount++) {
             graph.addCell(newCanvasEdge);
             //add datrabaseid to the link evidnce node to allow knowledge and actors to be connected to it.
             newCanvasEdge.setup(smallJSONData.edges[edgesCount]._inV);
+//            console.log(newCanvasEdge);
     }
 }
     if (smallJSONData.edges[edgesCount].linkType === 'S')
@@ -2722,6 +2815,7 @@ for (edgesCount; edgesCount < edgesLength; edgesCount++) {
         graph.addCell(newCanvasEdge);
 
     }
+}
 }
 function drawAllKnowledge(){
 //construct kNodes
@@ -2840,6 +2934,8 @@ function drawAllKnowledgeNodes(data) {
 $(".getCausalEvidenceSummarySwitch").on('click', function() {
   //determine if the switch is on or off
     var val = [];
+    //wipe path for causal evidence when node is  
+//    hidePath();
     $(':checkbox:checked').each(function(i){
       val[i] = $(this).val();
     });
@@ -2851,13 +2947,17 @@ $(".getCausalEvidenceSummarySwitch").on('click', function() {
         getCausalEvidence=false;
         $(".findCausalDataStartToFinish").css("display","none");
     }
+//    getNodesthing();
 });
 
 function displayCausalEvidence(startNode,endNode) {
-    if(startNode === "startNode" || endNode === "finishNode"){
+    console.log(startNode,endNode);
+    if(startNode === "undefined" || endNode === "finishNode"){
         window.alert("Must select both a start and end node");
     }
+    
     else{
+        
 //    $('#btnGetEvidenceSingle').on('click', function () {
 //
 //    // Adjacent DAPSIWR nodes:
@@ -3531,7 +3631,6 @@ function displayCausalKnowledge(causalData) {
                 }
                 count++;
             }
-            $(".knowledgeItemNumber" + i + "").append($('<div class="form-group" style="padding-top:10px;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;Relevance</label><textarea class="form-control" rows="auto" id="comment">' + k.relevance + '</textarea></div>'));
             $(".knowledgeItemNumber" + i + "").append('<hr/>');//line break to diffrencaite between articles
 
             j++;

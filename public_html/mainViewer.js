@@ -1919,6 +1919,45 @@ var smallJSONData = {
             "description": "Supported by",
             "linkType": "K",
             "relevance": 70,
+            "_id": "#13:55",
+            "_type": "edge",
+            "_outV": "#2379:4",
+            "_inV": "#2305:0",
+            "_label": null
+        },
+        
+         {
+            "description": "Supported by",
+            "linkType": "K",
+            "relevance": 70,
+            "_id": "#13:5544",
+            "_type": "edge",
+            "_outV": "#2379:4",
+            "_inV": "#2178:0",
+            "_label": null
+        },
+         {
+            "description": "Supported by",
+            "linkType": "K",
+            "relevance": 70,
+            "_id": "#13:5566",
+            "_type": "edge",
+            "_outV": "#2379:4",
+            "_inV": "#2179:0",
+            "_label": null
+        },
+        {
+            "linkType": "A",
+            "_id": "#13:499",
+            "_type": "edge",
+            "_outV": "#2379:4",
+            "_inV": "#1721:0",
+            "_label": null
+        },
+        {
+            "description": "Supported by",
+            "linkType": "K",
+            "relevance": 70,
             "_id": "#13:14",
             "_type": "edge",
             "_outV": "#673:0",
@@ -2030,18 +2069,20 @@ var smallJSONData = {
 };
 
 
-window.onload = function(){
- setTimeout(function(){
-  drawNavigator();
-  drawAllKnowledge();
- }, 1);
+window.onload = function () {
+    setTimeout(function () {
+        drawNavigator();
+        drawAllKnowledgeAndActors();
+    }, 1);
 };
 var parentNodes = [];
 var pageLoadTimer;
+var disableKnowledgeClickToggle = false;
+var disableActorClickToggle = false;
 var actorNodes = [];
 //console.log(pageLoadTimer);
 var length = smallJSONData.vertices.length;
-var getCausalEvidence=false;
+var getCausalEvidence = false;
 var icons = joint.shapes.kb.icons;
 var combinedKnowledgeNodes = [];
 
@@ -2144,42 +2185,42 @@ var paperScroller = new joint.ui.PaperScroller({
 $('.paper-container').append(paperScroller.render().el);
 
 drawMainGraph();
-function drawNavigator(){
+function drawNavigator() {
     var navigator = this.navigator = new joint.ui.Navigator({
-    paperScroller: this.paperScroller,
-    width: 250,
-    height: 235,
-    padding: 10,
-    zoomOptions: {max: 5, min: 0.2}
-});
-navigator.$el.appendTo('.paper-navigator');
-navigator.render();
+        paperScroller: this.paperScroller,
+        width: 250,
+        height: 235,
+        padding: 10,
+        zoomOptions: {max: 5, min: 0.2}
+    });
+    navigator.$el.appendTo('.paper-navigator');
+    navigator.render();
 }
 
 // Presentational attributes.
 var attrs = {
     elementDefault: {
-        text: { fill: '#fff', style: { 'text-shadow': '1px 1px 1px #999', 'text-transform': 'capitalize' } },
-        circle: { fill: '#feb663', stroke: 'white' }
+        text: {fill: '#fff', style: {'text-shadow': '1px 1px 1px #999', 'text-transform': 'capitalize'}},
+        circle: {fill: '#feb663', stroke: 'white'}
     },
     elementSelected: {
-        circle: { fill: '#9687fettt' }
+        circle: {fill: '#9687fettt'}
     },
     elementHighlighted: {
-        circle: { fill: '#31d0c66tt66' }
+        circle: {fill: '#31d0c66tt66'}
     },
     linkDefault: {
         '.connection': {stroke: '#600', 'stroke-width': 4},
-        '.marker-target': { fill: '#600', stroke: '#663300', d: 'M 20 0 L 0 10 L 20 20 z' }
+        '.marker-target': {fill: '#600', stroke: '#663300', d: 'M 20 0 L 0 10 L 20 20 z'}
     },
     linkHighlighted: {
-        '.connection': { stroke: '#33334e', 'stroke-width': 6 },
-        '.marker-target': { fill: '#33334e', stroke: '#663300', d: 'M 20 0 L 0 10 L 20 20 z' }
+        '.connection': {stroke: '#33334e', 'stroke-width': 6},
+        '.marker-target': {fill: '#33334e', stroke: '#663300', d: 'M 20 0 L 0 10 L 20 20 z'}
     }
 };
 
 paper.on('cell:pointerdown', function (cellView) {
-    
+
     $('.displayNodeData').empty();
     $('.displayNodeDataButton').css("display", "none");
     $('.displayActorsData').empty();
@@ -2187,85 +2228,108 @@ paper.on('cell:pointerdown', function (cellView) {
     $('.displayKnowledgeperNode').empty();
     $('.displayKnowledgeForNodeButton').css("display", "none");
     $('.viewCausalSummry').css("display", "none");
-    
+
     var nodes = [];
     var links = [];
     var nodeKnowledgeData = [];
+    var knowledegeNodeData = [];
     var nodeActors = [];
     var nodeData;
     var nodeType;
 
 //retrieve the nodeData and the nodetype when user clicks a specific node
-if(getCausalEvidence===false){
-    cellView.unhighlight();
-    console.log("cellView = ",cellView);
-    nodeData = cellView.model.attributes.nodeData;
-    nodeType = cellView.model.attributes.type;
-    //cycle through all cells in the graph
-    graph.get('cells').find(function (cell) {
-
-        //find out what knowledge nodes and Actor nodes are connected to a particular node. Don't
-        //need to consider nodes of type knowledge and Actor for this
-        if (cell.get('type') !== 'kb.Knowledge' && cell.get('type') !== 'kb.ActorNode') {
-            //if the id of the a cell in graph matchs the one that was clicked
-            if (cell.id === cellView.model.id) {
-                nodes = graph.getNeighbors(cell, [false, true]);
-                _.each(nodes, function (kNode) {
-                    if (kNode.get('type') === 'kb.Knowledge') {
-                        nodeKnowledgeData.push(kNode.attributes.supportingKnowledge);
-                    }
-                    if (kNode.get('type') === 'kb.ActorNode') {
-                        nodeActors.push(kNode.attributes.nodeData);
-                    }
-                });
-            }
+    if (getCausalEvidence === false) {
+        cellView.unhighlight();
+        if (cellView.model.attributes.type === "kb.Knowledge") {
+            knowledegeNodeData.push(cellView.model.attributes.supportingKnowledge);
+        } else {
+            console.log("here");
+            nodeData = cellView.model.attributes.nodeData;
         }
+        nodeType = cellView.model.attributes.type;
+        console.log(cellView);
+        //cycle through all cells in the graph
+//    if(disableKnowledgeClickToggle===false){
+        graph.get('cells').find(function (cell) {
 
-        //show all knowledge or actor nodes attached to the node the user has clicked a parent node
-        if (cell.get('type') !== 'kb.Knowledge' && cell.get('type') !== 'kb.ActorNode') {
-            if (cell.id === cellView.model.id) {
-                //get all connected nodes and links in the outbound direction  
-                links = graph.getConnectedLinks(cell, [false, true]);
-                nodes = graph.getNeighbors(cell, [false, true]);
-                //draw only actor links
-                _.each(links, function (actorLink) {
-                    if (actorLink.get('type') === "kb.ActorLink") {
-                        //if knowledge and actors are already displayed then turn them off and vice versa
-                        status = actorLink.attr('./display');
-                        if (status === 'none') {
-                            actorLink.attr('./display', 'block');
-
-                        } else {
-                            actorLink.attr('./display', 'none');
+            //find out what knowledge nodes and Actor nodes are connected to a particular node. Don't
+            //need to consider nodes of type knowledge and Actor for this
+            if (cell.get('type') !== 'kb.Knowledge' && cell.get('type') !== 'kb.ActorNode') {
+                //if the id of the a cell in graph matchs the one that was clicked
+                if (cell.id === cellView.model.id) {
+                    nodes = graph.getNeighbors(cell, [false, true]);
+                    _.each(nodes, function (kNode) {
+                        if (kNode.get('type') === 'kb.Knowledge') {
+                            nodeKnowledgeData.push(kNode.attributes.supportingKnowledge);
                         }
-                    }
-                });
-                //draw the knowledge and Actor nodes
-                _.each(nodes, function (knowledgeActorNode) {
-                    if (knowledgeActorNode.get('type') === "kb.Knowledge" || knowledgeActorNode.get('type') === "kb.ActorNode") {
-                        status = knowledgeActorNode.attr('./display');
-                        if (status === 'none') {
-                            knowledgeActorNode.attr('./display', 'block');
-                        } else {
-                            knowledgeActorNode.attr('./display', 'none');
+                        if (kNode.get('type') === 'kb.ActorNode') {
+                            nodeActors.push(kNode.attributes.nodeData);
                         }
-                    }
-                });
+                    });
+                }
             }
+
+            //show all knowledge or actor nodes attached to the node the user has clicked a parent node
+            if (cell.get('type') !== 'kb.Knowledge' && cell.get('type') !== 'kb.ActorNode') {
+                if (cell.id === cellView.model.id) {
+                    //get all connected nodes and links in the outbound direction  
+                    links = graph.getConnectedLinks(cell, [false, true]);
+                    nodes = graph.getNeighbors(cell, [false, true]);
+                    //draw only actor links
+                    if (disableActorClickToggle === false) {
+                        _.each(links, function (actorLink) {
+                            if (actorLink.get('type') === "kb.ActorLink") {
+                                //if knowledge and actors are already displayed then turn them off and vice versa
+                                status = actorLink.attr('./display');
+                                if (status === 'none') {
+                                    actorLink.attr('./display', 'block');
+
+                                } else {
+                                    actorLink.attr('./display', 'none');
+                                }
+                            }
+                        });
+                    }
+                    //draw the knowledge and Actor nodes
+                    _.each(nodes, function (node) {
+                        if (node.get('type') === "kb.Knowledge" && disableKnowledgeClickToggle === false) {
+                            status = node.attr('./display');
+                            if (status === 'none') {
+                                node.attr('./display', 'block');
+                            } else {
+                                node.attr('./display', 'none');
+                            }
+                        }
+                        if (node.get('type') === "kb.ActorNode" && disableActorClickToggle === false) {
+                            status = node.attr('./display');
+                            if (status === 'none') {
+                                node.attr('./display', 'block');
+                            } else {
+                                node.attr('./display', 'none');
+                            }
+                        }
+                    });
+                }
+            }
+
+        });
+
+
+        //if conditions are met append the knowledge on the right hand side viewer
+        if (nodeType === "kb.Knowledge" && knowledegeNodeData.length !== 0) {
+            displayNodeKnowledgeData(knowledegeNodeData);
+        } else {
+            if (nodeType !== "kb.Rel" && nodeData.length !== null) {
+                displayNodeData(nodeData);
+            }
+            if (nodeKnowledgeData.length !== 0) {
+                displayNodeKnowledgeData(nodeKnowledgeData);
+            }
+            if (nodeActors.length !== 0) {
+                displayActorNodesData(nodeActors);
+            }
+
         }
-
-    });
-
-    //if conditions are met append the knowledge on the right hand side viewer 
-    if (nodeType !== "kb.Rel" && nodeData.length !== 0) {
-        displayNodeData(nodeData);
-    }
-    if (nodeKnowledgeData.length !== 0) {
-        displayNodeKnowledge(nodeKnowledgeData);
-    }
-    if (nodeActors.length !== 0) {
-        displayActorNodes(nodeActors);
-    }
 
     }
     if (getCausalEvidence === true) {
@@ -2292,162 +2356,167 @@ if(getCausalEvidence===false){
 // Select source.
 //getNodesthing(cellView.model);
 
-var selected;
-var target;
-var option2=false;
-var directed = true;
-var count =1;
+        var selected;
+        var target;
+        var option2 = false;
+        var directed = true;
+        var count = 1;
 //paper.on('cell:pointerdown', function(cellView) {
 
-    if (cellView.model.isLink()) return;
-    if (selected) return;
-    (selected = cellView.model).attr(attrs.elementSelected);
-if(count ===1){
-      selected = cellView;
-      selected.highlight();
-      console.log("shuld nen hfgfdvfd",selected);
-      count++;
-      }
+        if (cellView.model.isLink())
+            return;
+        if (selected)
+            return;
+        (selected = cellView.model).attr(attrs.elementSelected);
+        if (count === 1) {
+            selected = cellView;
+            selected.highlight();
+            count++;
+        }
 //    hidePath();
 //});
 
 // Hover an element to select a target.
 //if(option2===false){
-paper.on('cell:pointerdown', function(cellView, evt) {
-test(cellView);
-hidePath();
-    if (cellView.model.isLink()) return;
-    if(cellView.model === selected){
-        selected=null;
-    }
-    target = cellView;
-    target.unhighlight();
-    if (selected) {
-        var path = graph.shortestPath(selected.model, target.model, { directed: directed });
-        showPath(path);
+        paper.on('cell:pointerdown', function (cellView, evt) {
+            test(cellView);
+            hidePath();
+            if (cellView.model.isLink())
+                return;
+            if (cellView.model === selected) {
+                selected = null;
+            }
+            target = cellView;
+            target.unhighlight();
+            if (selected) {
+                var path = graph.shortestPath(selected.model, target.model, {directed: directed});
+                showPath(path);
 //        target.highlight();
-        cellView.model.attr(attrs.elementHighlighted);
-        //call display evidence and send node id's to function
-        console.log(selected.model.attributes.databaseId);
-        displayCausalEvidence(selected.model.attributes.databaseId,cellView.model.attributes.databaseId);
-    }
-});
+                cellView.model.attr(attrs.elementHighlighted);
+                //call display evidence and send node id's to function
+                console.log(selected.model.attributes.databaseId);
+                displayCausalEvidence(selected.model.attributes.databaseId, cellView.model.attributes.databaseId);
+            }
+        });
 
-paper.on('blank:pointerdown', function(evt, x, y) {
-        hidePath();
-        selected.unhighlight();
-});
+        paper.on('blank:pointerdown', function (evt, x, y) {
+            hidePath();
+            selected.unhighlight();
+        });
 // Helpers.
 
-var pathLinks = [];
+        var pathLinks = [];
 
-function hidePath() {
+        function hidePath() {
 
-    _.each(pathLinks, function(link) {
-        link.attr(attrs.linkDefault);
-        link.set('labels', []);
-    });
-}
+            _.each(pathLinks, function (link) {
+                link.attr(attrs.linkDefault);
+                link.set('labels', []);
+            });
+        }
 
-function showPath(path) {
+        function showPath(path) {
 
 //    $('#path').text(path.join(' -> '));
-    for (var i = 0; i < path.length; i++) {
-        var curr = path[i];
-        var next = path[i + 1];
-        if (next) {
+            for (var i = 0; i < path.length; i++) {
+                var curr = path[i];
+                var next = path[i + 1];
+                if (next) {
 //             console.log("sending thsi request now ");
-            var link = graph.getCell([curr, next].sort().join());
+                    var link = graph.getCell([curr, next].sort().join());
 //           console.log("what is returned ?",link);
 //            link.label(0, { position: .5, attrs: {
 //                text: { text: ' ' + (i + 1) + ' ', 'font-size': 10, fill: 'white' },
 //                rect: { rx: 8, ry: 8, fill: 'black', stroke: 'black', 'stroke-width': 5 }
 //            } });
-            pathLinks.push(link.attr(attrs.linkHighlighted));
+                    pathLinks.push(link.attr(attrs.linkHighlighted));
+                }
+            }
         }
-    }
-}
 
 
 
     }
 });
-function test(cellView){
-    console.log("what event does this fire for",cellView);
+function test(cellView) {
+    console.log("what event does this fire for", cellView);
 }
-function getNodesthing(){
-var selected;
-var directed = true;
-var count =1;
-if(count===1){
-paper.on('cell:pointerdown', function(cellView) {
-console.log(cellView,count);
-    if (cellView.model.isLink()) return;
+function getNodesthing() {
+    var selected;
+    var directed = true;
+    var count = 1;
+    if (count === 1) {
+        paper.on('cell:pointerdown', function (cellView) {
+            console.log(cellView, count);
+            if (cellView.model.isLink())
+                return;
 //    if (selected) selected.attr(attrs.elementDefault);
 //    (selected = cellView.model).attr(attrs.elementSelected);
-      selected = cellView.model;
-    hidePath();
-});
-count++;
-}
+            selected = cellView.model;
+            hidePath();
+        });
+        count++;
+    }
 
 // Hover an element to select a target.
 
-paper.on('cell:mouseover', function(cellView, evt) {
+    paper.on('cell:mouseover', function (cellView, evt) {
 
-hidePath();
-//console.log("enter here", option2);
-    if (cellView.model.isLink()) return;
-    if(cellView.model === selected){
-        selected=null;
-    }
-    if (selected) {
-        var path = graph.shortestPath(selected, cellView.model, { directed: directed });
-        showPath(path);
-        cellView.model.attr(attrs.elementHighlighted);
-        //call display evidence and send node id's to function
-//        displayCausalEvidence(selected.databaseId,cellView.model.databaseId);
-    }
-});
-
-
-paper.on('blank:pointerdown', function(evt, x, y) {
         hidePath();
-});
+//console.log("enter here", option2);
+        if (cellView.model.isLink())
+            return;
+        if (cellView.model === selected) {
+            selected = null;
+        }
+        if (selected) {
+            var path = graph.shortestPath(selected, cellView.model, {directed: directed});
+            showPath(path);
+            cellView.model.attr(attrs.elementHighlighted);
+            //call display evidence and send node id's to function
+//        displayCausalEvidence(selected.databaseId,cellView.model.databaseId);
+        }
+    });
+
+
+    paper.on('blank:pointerdown', function (evt, x, y) {
+        hidePath();
+    });
 // Helpers.
 
-var pathLinks = [];
+    var pathLinks = [];
 
-function hidePath() {
+    function hidePath() {
 
-    _.each(pathLinks, function(link) {
-        link.attr(attrs.linkDefault);
-        link.set('labels', []);
-    });
-}
+        _.each(pathLinks, function (link) {
+            link.attr(attrs.linkDefault);
+            link.set('labels', []);
+        });
+    }
 
-function showPath(path) {
+    function showPath(path) {
 
 //    $('#path').text(path.join(' -> '));
-    for (var i = 0; i < path.length; i++) {
-        var curr = path[i];
-        var next = path[i + 1];
-        if (next) {
+        for (var i = 0; i < path.length; i++) {
+            var curr = path[i];
+            var next = path[i + 1];
+            if (next) {
 //             console.log("sending thsi request now ");
-            var link = graph.getCell([curr, next].sort().join());
+                var link = graph.getCell([curr, next].sort().join());
 //           console.log("what is returned ?",link);
 //            link.label(0, { position: .5, attrs: {
 //                text: { text: ' ' + (i + 1) + ' ', 'font-size': 10, fill: 'white' },
 //                rect: { rx: 8, ry: 8, fill: 'black', stroke: 'black', 'stroke-width': 5 }
 //            } });
-            pathLinks.push(link.attr(attrs.linkHighlighted));
+                pathLinks.push(link.attr(attrs.linkHighlighted));
+            }
         }
     }
+
+
+
 }
-
-
-
-    };
+;
 //var startNode="";
 //var finishNode="";
 //var myHighlighter = false;
@@ -2459,388 +2528,386 @@ function showPath(path) {
 //        }
 //      }
 //    }
-function drawMainGraph(){
-var responseNodes = [];
+function drawMainGraph() {
+    var responseNodes = [];
 //var actorNodes = [];
-var edgesCount = 0;
-var edgesLength = smallJSONData.edges.length;
-var targetCanvasId;
-var sourceCanvasId;
-var storyX = (width / (8)) - 200;
-var storyYstep = (height / (storyAmount + 1));
-var storyY = 0;
-var driverX = (width / (8) * 2) - 200;
-var driverYstep = (height / (driverAmount + 1));
-var driverY = 0;
-var activityX = (width / (8) * 3) - 200;
-var activityYstep = (height / (activityAmount + 1));
-var activityY = 0;
-var pressureX = ((width / 8) * 4) - 200;
-var pressureYstep = (height / (pressureAmount + 1));
-var pressureY = 0;
-var stateX = ((width / 8) * 5) - 200;
-var stateYstep = (height / (stateAmount + 1));
-var stateY = 0;
-var impactX = ((width / 8) * 6) - 200;
-var impactYstep = (height / (impactAmount + 1));
-var impactY = 0;
-var welfareX = ((width / 8) * 7) - 200;
-var welfareYstep = (height / (welfareAmount + 1));
-var welfareY = 0;
-var responseX = ((width / 8) * 8) - 200;
-var responseYstep = (height / (responseAmount + 1));
-var responseY = 0;
+    var edgesCount = 0;
+    var edgesLength = smallJSONData.edges.length;
+    var targetCanvasId;
+    var sourceCanvasId;
+    var storyX = (width / (8)) - 200;
+    var storyYstep = (height / (storyAmount + 1));
+    var storyY = 0;
+    var driverX = (width / (8) * 2) - 200;
+    var driverYstep = (height / (driverAmount + 1));
+    var driverY = 0;
+    var activityX = (width / (8) * 3) - 200;
+    var activityYstep = (height / (activityAmount + 1));
+    var activityY = 0;
+    var pressureX = ((width / 8) * 4) - 200;
+    var pressureYstep = (height / (pressureAmount + 1));
+    var pressureY = 0;
+    var stateX = ((width / 8) * 5) - 200;
+    var stateYstep = (height / (stateAmount + 1));
+    var stateY = 0;
+    var impactX = ((width / 8) * 6) - 200;
+    var impactYstep = (height / (impactAmount + 1));
+    var impactY = 0;
+    var welfareX = ((width / 8) * 7) - 200;
+    var welfareYstep = (height / (welfareAmount + 1));
+    var welfareY = 0;
+    var responseX = ((width / 8) * 8) - 200;
+    var responseYstep = (height / (responseAmount + 1));
+    var responseY = 0;
 
-for (verticesCount = 0; verticesCount < length; verticesCount++)
-{
-    var shortText = smallJSONData.vertices[verticesCount].name;
-    if (shortText.length > 15) {
-        shortText = shortText.substring(0, 15) + "...";
-    }
-
-    var name = smallJSONData.vertices[verticesCount].name;
-    var categoryType = (smallJSONData.vertices[verticesCount]['category']);
-
-    if (categoryType === "Story")
+    for (verticesCount = 0; verticesCount < length; verticesCount++)
     {
-        storyY = storyY + storyYstep;
-
-        var shapes = new joint.shapes.kb.Framework({
-            position: {x: storyX, y: storyY},
-            attrs: {
-                text: {
-                    fill: '#000000',
-                    text: shortText,
-                    'letter-spacing': 0,
-                    style: {'text-shadow': '1px 0 1px #333333'}
-                },
-                '.outer, .inner': {
-                    fill: '#31d0c6',
-                    stroke: 'none',
-                    filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
-                }
-            },
-            databaseId: smallJSONData.vertices[verticesCount]._id,
-            nodeData: smallJSONData.vertices[verticesCount],
-            xcoord: storyX,
-            type: 'kb.Story',
-            ycoord: storyY
-        });
-        iconString = iconTable[categoryType];
-        shapes.attr('image/xlink:href', icons[iconString]);
-
-    }
-    if (categoryType === "Driver")
-    {
-        driverY = driverY + driverYstep;
-
-        var shapes = new joint.shapes.kb.Framework({
-            position: {x: driverX, y: driverY},
-            attrs: {
-                text: {
-                    fill: '#000000',
-                    text: shortText,
-                    'letter-spacing': 0,
-                    style: {'text-shadow': '1px 0 1px #333333'}
-                },
-                '.outer, .inner': {
-                    fill: '#31d0c6',
-                    stroke: 'none',
-                    filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
-                }
-            },
-            databaseId: smallJSONData.vertices[verticesCount]._id,
-            nodeData: smallJSONData.vertices[verticesCount],
-            type: 'kb.Driver',
-            xcoord: driverX,
-            ycoord: driverY
-        });
-        iconString = iconTable[categoryType];
-        shapes.attr('image/xlink:href', icons[iconString]);
-    }
-
-    if (categoryType === "Activity")
-    {
-        activityY = activityY + activityYstep;
-
-        var shapes = new joint.shapes.kb.Framework({
-            position: {x: activityX, y: activityY},
-            attrs: {
-                text: {
-                    fill: '#000000',
-                    text: shortText,
-                    'letter-spacing': 0,
-                    style: {'text-shadow': '1px 0 1px #333333'}
-                },
-                '.outer, .inner': {
-                    fill: '#31d0c6',
-                    stroke: 'none',
-                    filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
-                }
-            },
-            databaseId: smallJSONData.vertices[verticesCount]._id,
-            nodeData: smallJSONData.vertices[verticesCount],
-            type: 'kb.Activity',
-            xcoord: activityX,
-            ycoord: activityY
-        });
-        iconString = iconTable[categoryType];
-        shapes.attr('image/xlink:href', icons[iconString]);
-    }
-    if (categoryType === "Pressure")
-    {
-        pressureY = pressureY + pressureYstep;
-
-        var shapes = new joint.shapes.kb.Framework({
-            position: {x: pressureX, y: pressureY},
-            attrs: {
-                text: {
-                    fill: '#000000',
-                    text: shortText,
-                    'letter-spacing': 0,
-                    style: {'text-shadow': '1px 0 1px #333333'}
-                },
-                '.outer, .inner': {
-                    fill: '#31d0c6',
-                    stroke: 'none',
-                    filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
-                }
-            },
-            databaseId: smallJSONData.vertices[verticesCount]._id,
-            nodeData: smallJSONData.vertices[verticesCount],
-            type: 'kb.Pressure',
-            xcoord: pressureX,
-            ycoord: pressureY
-        });
-        iconString = iconTable[categoryType];
-        shapes.attr('image/xlink:href', icons[iconString]);
-    }
-    if (categoryType === "State")
-    {
-        stateY = stateY + stateYstep;
-        var shapes = new joint.shapes.kb.Framework({
-            position: {x: stateX, y: stateY},
-            attrs: {
-                text: {
-                    fill: '#000000',
-                    text: shortText,
-                    'letter-spacing': 0,
-                    style: {'text-shadow': '1px 0 1px #333333'}
-                },
-                '.outer, .inner': {
-                    fill: '#31d0c6',
-                    stroke: 'none',
-                    filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
-                }
-            },
-            databaseId: smallJSONData.vertices[verticesCount]._id,
-            nodeData: smallJSONData.vertices[verticesCount],
-            type: 'kb.State',
-            xcoord: stateX,
-            ycoord: stateY
-        });
-        iconString = iconTable[categoryType];
-        shapes.attr('image/xlink:href', icons[iconString]);
-    }
-    if (categoryType === "Impact")
-    {
-        impactY = impactY + impactYstep;
-        var shapes = new joint.shapes.kb.Framework({
-            position: {x: impactX, y: impactY},
-            attrs: {
-                text: {
-                    fill: '#000000',
-                    text: shortText,
-                    'letter-spacing': 0,
-                    style: {'text-shadow': '1px 0 1px #333333'}
-                },
-                '.outer, .inner': {
-                    fill: '#31d0c6',
-                    stroke: 'none',
-                    filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
-                }
-            },
-            databaseId: smallJSONData.vertices[verticesCount]._id,
-            nodeData: smallJSONData.vertices[verticesCount],
-            type: 'kb.Impact',
-            xcoord: impactX,
-            ycoord: impactY
-        });
-        iconString = iconTable[categoryType];
-        shapes.attr('image/xlink:href', icons[iconString]);
-    }
-    if (categoryType === "Welfare")
-    {
-        welfareY = welfareY + welfareYstep;
-
-        var shapes = new joint.shapes.kb.Framework({
-            position: {x: welfareX, y: welfareY},
-            attrs: {
-                text: {
-                    fill: '#000000',
-                    text: shortText,
-                    'letter-spacing': 0,
-                    style: {'text-shadow': '1px 0 1px #333333'}
-                },
-                '.outer, .inner': {
-                    fill: '#31d0c6',
-                    stroke: 'none',
-                    filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
-                }
-            },
-            databaseId: smallJSONData.vertices[verticesCount]._id,
-            nodeData: smallJSONData.vertices[verticesCount],
-            type: 'kb.Welfare',
-            xcoord: welfareX,
-            ycoord: welfareY
-        });
-        iconString = iconTable[categoryType];
-        shapes.attr('image/xlink:href', icons[iconString]);
-    }
-    if (categoryType === "Response")
-    {
-        responseY = responseY + responseYstep;
-
-        var shapes = new joint.shapes.kb.Framework({
-            position: {x: responseX, y: responseY},
-            attrs: {
-                text: {
-                    fill: '#000000',
-                    text: shortText,
-                    'letter-spacing': 0,
-                    style: {'text-shadow': '1px 0 1px #333333'}
-                },
-                '.outer, .inner': {
-                    fill: '#31d0c6',
-                    stroke: 8,
-                    filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
-                }
-            },
-            databaseId: smallJSONData.vertices[verticesCount]._id,
-            nodeData: smallJSONData.vertices[verticesCount],
-            type: 'kb.Response',
-            xcoord: responseX,
-            ycoord: responseY
-        });
-        responseNodes.push(smallJSONData.vertices[verticesCount]);
-        iconString = iconTable[categoryType];
-        shapes.attr('image/xlink:href', icons[iconString]);
-    }
-    if (categoryType === "Actor")
-    {
-        actorNodes.push(smallJSONData.vertices[verticesCount]);
-    }
-    graph.addCells(shapes);
-}
-
-for (edgesCount; edgesCount < edgesLength; edgesCount++) {
-    var drawEdge = true;
-    //review can detect backwards links by using x position of each node i.e if targetx < source x then don't draw it
-    if (smallJSONData.edges[edgesCount].linkType === 'C1')
-    {
-         //check to see if the response nodes have backwards links. If so hide them on the graph
-        _.each(responseNodes, function (node) {
-            if (smallJSONData.edges[edgesCount]._outV === node._id) {
-                drawEdge = false;
-            }
-        });
-        if(drawEdge){
-        // Find the source id of the causal relationship
-        sourceCanvasId = getCanvasIdByDatabaseId(smallJSONData.edges[edgesCount]._outV, this.graph);
-
-        // Loop through the edges in the JSON data to find the target vertex
-        // Get database id of intermediate vertex ie the linkEvidence node
-        var c1targetNode = smallJSONData.edges[edgesCount]._inV;
-        
-        // Find link with '_outV' equal to intermediate vertex id and property
-        // linkType equal to 'C2'.
-
-        _.each(smallJSONData.edges, function (link) {
-            if ((link._outV === c1targetNode) && (link.linkType === 'C2'))
-            {
-                c2Link = link;
-            }
-        });
-
-        // Get the target vertex
-        //var newTargetCanvasId = getCanvasIdByDatabaseId( secondLink._inV, this.graph );
-        targetCanvasId = getCanvasIdByDatabaseId(c2Link._inV, this.graph);
-
-        // Create a Causal link between vertices
-        newCanvasEdge = new joint.shapes.kb.CausalLink({
-            source: {id: sourceCanvasId},
-            target: {id: targetCanvasId},
-            attrs:{
-                '.connection': {stroke: '#600', 'stroke-width': 4}},
-             id: [sourceCanvasId,targetCanvasId].sort().join(),
-//             labels:[0, { position: .5, attrs: {
-//                text: { text: ' ' + "   "+ ' ', 'font-size': 10, fill: 'white' },
-//                rect: { rx: 15, ry: 15, fill: 'white', stroke: 'black', 'stroke-width': 2 }
-//            } }],
-    
-//            databaseId:smallJSONData.edges[edgesCount]._inV
-        });
-//        x= newCanvasEdge.attributes.labels[1].position;
-        
-//                 // set the labels at either end of the node (optional)
-//                newCanvasEdge.label(0, {attrs:{ text: { text: '' }}});
-//                newCanvasEdge.label(1, {attrs:{ text: { text: '' }}});
-
-////check to see if the response nodes have backwards links. If so hide them on the graph
-//        _.each(responseNodes, function (node) {
-//            if (smallJSONData.edges[edgesCount]._outV === node._id) {
-//                drawEdge = false;
-//            }
-//        });
-//        if (drawEdge) {
-            graph.addCell(newCanvasEdge);
-            //add datrabaseid to the link evidnce node to allow knowledge and actors to be connected to it.
-            newCanvasEdge.setup(smallJSONData.edges[edgesCount]._inV);
-//            console.log(newCanvasEdge);
-    }
-}
-    if (smallJSONData.edges[edgesCount].linkType === 'S')
-    {
-        // Find the source id of the causal relationship
-        sourceCanvasId = getCanvasIdByDatabaseId(smallJSONData.edges[edgesCount]._outV, this.graph);
-        targetCanvasId = getCanvasIdByDatabaseId(smallJSONData.edges[edgesCount]._inV, this.graph);
-        newCanvasEdge = new joint.shapes.fsa.Arrow({
-            source: {id: sourceCanvasId},
-            target: {id: targetCanvasId},
-            attrs: {
-                '.connection': {stroke: '#600', 'stroke-width': 4}
-            },
-            id: [sourceCanvasId,targetCanvasId].sort().join()
-        });
-        graph.addCell(newCanvasEdge);
-
-    }
-}
-}
-function drawAllKnowledge(){
-//construct kNodes
-var knowledgeNodeId = 0;
-_.each(smallJSONData.vertices, function (node) {
-    var knowledgePerNode = [];
-    _.each(smallJSONData.edges, function (link) {
-        if (link.linkType === "A" && link._outV === node._id) {
-            positionActorNode(link._outV, link._inV, actorNodes, this.graph);
+        var shortText = smallJSONData.vertices[verticesCount].name;
+        if (shortText.length > 15) {
+            shortText = shortText.substring(0, 15) + "...";
         }
-        //if link of type K and it source node is the current node
-        if (link.linkType === "K" && link._outV === node._id) {
-            _.each(smallJSONData.vertices, function (knowledgeNode) {
-                if(knowledgeNode.category === "Knowledge"){
-                if (knowledgeNode._id === link._inV) {
-                    knowledgePerNode.push(knowledgeNode);
-                }
-            }
+
+        var name = smallJSONData.vertices[verticesCount].name;
+        var categoryType = (smallJSONData.vertices[verticesCount]['category']);
+
+        if (categoryType === "Story")
+        {
+            storyY = storyY + storyYstep;
+
+            var shapes = new joint.shapes.kb.Framework({
+                position: {x: storyX, y: storyY},
+                attrs: {
+                    text: {
+                        fill: '#000000',
+                        text: shortText,
+                        'letter-spacing': 0,
+                        style: {'text-shadow': '1px 0 1px #333333'}
+                    },
+                    '.outer, .inner': {
+                        fill: '#31d0c6',
+                        stroke: 'none',
+                        filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
+                    }
+                },
+                databaseId: smallJSONData.vertices[verticesCount]._id,
+                nodeData: smallJSONData.vertices[verticesCount],
+                xcoord: storyX,
+                type: 'kb.Story',
+                ycoord: storyY
             });
+            iconString = iconTable[categoryType];
+            shapes.attr('image/xlink:href', icons[iconString]);
+
+        }
+        if (categoryType === "Driver")
+        {
+            driverY = driverY + driverYstep;
+
+            var shapes = new joint.shapes.kb.Framework({
+                position: {x: driverX, y: driverY},
+                attrs: {
+                    text: {
+                        fill: '#000000',
+                        text: shortText,
+                        'letter-spacing': 0,
+                        style: {'text-shadow': '1px 0 1px #333333'}
+                    },
+                    '.outer, .inner': {
+                        fill: '#31d0c6',
+                        stroke: 'none',
+                        filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
+                    }
+                },
+                databaseId: smallJSONData.vertices[verticesCount]._id,
+                nodeData: smallJSONData.vertices[verticesCount],
+                type: 'kb.Driver',
+                xcoord: driverX,
+                ycoord: driverY
+            });
+            iconString = iconTable[categoryType];
+            shapes.attr('image/xlink:href', icons[iconString]);
+        }
+
+        if (categoryType === "Activity")
+        {
+            activityY = activityY + activityYstep;
+
+            var shapes = new joint.shapes.kb.Framework({
+                position: {x: activityX, y: activityY},
+                attrs: {
+                    text: {
+                        fill: '#000000',
+                        text: shortText,
+                        'letter-spacing': 0,
+                        style: {'text-shadow': '1px 0 1px #333333'}
+                    },
+                    '.outer, .inner': {
+                        fill: '#31d0c6',
+                        stroke: 'none',
+                        filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
+                    }
+                },
+                databaseId: smallJSONData.vertices[verticesCount]._id,
+                nodeData: smallJSONData.vertices[verticesCount],
+                type: 'kb.Activity',
+                xcoord: activityX,
+                ycoord: activityY
+            });
+            iconString = iconTable[categoryType];
+            shapes.attr('image/xlink:href', icons[iconString]);
+        }
+        if (categoryType === "Pressure")
+        {
+            pressureY = pressureY + pressureYstep;
+
+            var shapes = new joint.shapes.kb.Framework({
+                position: {x: pressureX, y: pressureY},
+                attrs: {
+                    text: {
+                        fill: '#000000',
+                        text: shortText,
+                        'letter-spacing': 0,
+                        style: {'text-shadow': '1px 0 1px #333333'}
+                    },
+                    '.outer, .inner': {
+                        fill: '#31d0c6',
+                        stroke: 'none',
+                        filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
+                    }
+                },
+                databaseId: smallJSONData.vertices[verticesCount]._id,
+                nodeData: smallJSONData.vertices[verticesCount],
+                type: 'kb.Pressure',
+                xcoord: pressureX,
+                ycoord: pressureY
+            });
+            iconString = iconTable[categoryType];
+            shapes.attr('image/xlink:href', icons[iconString]);
+        }
+        if (categoryType === "State")
+        {
+            stateY = stateY + stateYstep;
+            var shapes = new joint.shapes.kb.Framework({
+                position: {x: stateX, y: stateY},
+                attrs: {
+                    text: {
+                        fill: '#000000',
+                        text: shortText,
+                        'letter-spacing': 0,
+                        style: {'text-shadow': '1px 0 1px #333333'}
+                    },
+                    '.outer, .inner': {
+                        fill: '#31d0c6',
+                        stroke: 'none',
+                        filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
+                    }
+                },
+                databaseId: smallJSONData.vertices[verticesCount]._id,
+                nodeData: smallJSONData.vertices[verticesCount],
+                type: 'kb.State',
+                xcoord: stateX,
+                ycoord: stateY
+            });
+            iconString = iconTable[categoryType];
+            shapes.attr('image/xlink:href', icons[iconString]);
+        }
+        if (categoryType === "Impact")
+        {
+            impactY = impactY + impactYstep;
+            var shapes = new joint.shapes.kb.Framework({
+                position: {x: impactX, y: impactY},
+                attrs: {
+                    text: {
+                        fill: '#000000',
+                        text: shortText,
+                        'letter-spacing': 0,
+                        style: {'text-shadow': '1px 0 1px #333333'}
+                    },
+                    '.outer, .inner': {
+                        fill: '#31d0c6',
+                        stroke: 'none',
+                        filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
+                    }
+                },
+                databaseId: smallJSONData.vertices[verticesCount]._id,
+                nodeData: smallJSONData.vertices[verticesCount],
+                type: 'kb.Impact',
+                xcoord: impactX,
+                ycoord: impactY
+            });
+            iconString = iconTable[categoryType];
+            shapes.attr('image/xlink:href', icons[iconString]);
+        }
+        if (categoryType === "Welfare")
+        {
+            welfareY = welfareY + welfareYstep;
+
+            var shapes = new joint.shapes.kb.Framework({
+                position: {x: welfareX, y: welfareY},
+                attrs: {
+                    text: {
+                        fill: '#000000',
+                        text: shortText,
+                        'letter-spacing': 0,
+                        style: {'text-shadow': '1px 0 1px #333333'}
+                    },
+                    '.outer, .inner': {
+                        fill: '#31d0c6',
+                        stroke: 'none',
+                        filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
+                    }
+                },
+                databaseId: smallJSONData.vertices[verticesCount]._id,
+                nodeData: smallJSONData.vertices[verticesCount],
+                type: 'kb.Welfare',
+                xcoord: welfareX,
+                ycoord: welfareY
+            });
+            iconString = iconTable[categoryType];
+            shapes.attr('image/xlink:href', icons[iconString]);
+        }
+        if (categoryType === "Response")
+        {
+            responseY = responseY + responseYstep;
+
+            var shapes = new joint.shapes.kb.Framework({
+                position: {x: responseX, y: responseY},
+                attrs: {
+                    text: {
+                        fill: '#000000',
+                        text: shortText,
+                        'letter-spacing': 0,
+                        style: {'text-shadow': '1px 0 1px #333333'}
+                    },
+                    '.outer, .inner': {
+                        fill: '#31d0c6',
+                        stroke: 8,
+                        filter: {name: 'dropShadow', args: {dx: 0.555, dy: 20, blur: 20, color: '#99'}}
+                    }
+                },
+                databaseId: smallJSONData.vertices[verticesCount]._id,
+                nodeData: smallJSONData.vertices[verticesCount],
+                type: 'kb.Response',
+                xcoord: responseX,
+                ycoord: responseY
+            });
+            responseNodes.push(smallJSONData.vertices[verticesCount]);
+            iconString = iconTable[categoryType];
+            shapes.attr('image/xlink:href', icons[iconString]);
+        }
+        if (categoryType === "Actor")
+        {
+            actorNodes.push(smallJSONData.vertices[verticesCount]);
+        }
+        graph.addCells(shapes);
+    }
+
+    for (edgesCount; edgesCount < edgesLength; edgesCount++) {
+        var drawEdge = true;
+        var sourceCanvasIdAndXCoord;
+        var sourceCanvasId;
+        var sourceCanvasXCoord;
+        var targetCanvasIdAndXCoord;
+        var targetCanvasId;
+        var targetCanvasXCoord;
+        //review can detect backwards links by using x position of each node i.e if targetx < source x then don't draw it
+        if (smallJSONData.edges[edgesCount].linkType === 'C1')
+        {
+            // Find the source id and Xcoord of the causal relationship
+            sourceCanvasIdAndXCoord = getCanvasIdAndXCoordByDatabaseId(smallJSONData.edges[edgesCount]._outV, this.graph);
+            sourceCanvasId = sourceCanvasIdAndXCoord[0];
+            sourceCanvasXCoord = sourceCanvasIdAndXCoord[1];
+            // Loop through the edges in the JSON data to find the target vertex
+            // Get database id of intermediate vertex ie the linkEvidence node
+            var c1targetNode = smallJSONData.edges[edgesCount]._inV;
+
+            // Find link with '_outV' equal to intermediate vertex id and property
+            // linkType equal to 'C2'.
+            _.each(smallJSONData.edges, function (link) {
+                if ((link._outV === c1targetNode) && (link.linkType === 'C2'))
+                {
+                    c2Link = link;
+                }
+            });
+            // Get the target vertex
+            //var newTargetCanvasId = getCanvasIdByDatabaseId( secondLink._inV, this.graph );
+            targetCanvasIdAndXCoord = getCanvasIdAndXCoordByDatabaseId(c2Link._inV, this.graph);
+            targetCanvasId = targetCanvasIdAndXCoord[0];
+            targetCanvasXCoord = targetCanvasIdAndXCoord[1];
+            //check if the link is going backwards
+            if (targetCanvasXCoord + 20 > sourceCanvasXCoord) {
+                // Create a Causal link between vertices
+                newCanvasEdge = new joint.shapes.kb.CausalLink({
+                    source: {id: sourceCanvasId},
+                    target: {id: targetCanvasId},
+                    attrs: {
+                        '.connection': {stroke: '#600', 'stroke-width': 4}},
+                    id: [sourceCanvasId, targetCanvasId].sort().join()
+                });
+                graph.addCell(newCanvasEdge);
+                //add datrabaseid to the link evidnce node to allow knowledge and actors to be connected to it.
+                newCanvasEdge.setup(smallJSONData.edges[edgesCount]._inV);
+            }
+            //draw backwards edges on the canvas but hide them
+            else {
+                // Create a Causal link between vertices
+                newCanvasEdge = new joint.shapes.kb.CausalLink({
+                    source: {id: sourceCanvasId},
+                    target: {id: targetCanvasId},
+                    attrs: {
+                        '.connection': {stroke: '#600', 'stroke-width': 4}},
+                    id: [sourceCanvasId, targetCanvasId].sort().join()
+                });
+                graph.addCell(newCanvasEdge);
+                //add databaseid to the link evidnce node to allow knowledge and actors to be connected to it.
+                //Set display status to none
+                newCanvasEdge.setup(smallJSONData.edges[edgesCount]._inV, true);
+                newCanvasEdge.attr("./display", "none");
+            }
+        }
+        if (smallJSONData.edges[edgesCount].linkType === 'S')
+        {
+            // Find the source id of the causal relationship
+            sourceCanvasIdAndXCoord = getCanvasIdAndXCoordByDatabaseId(smallJSONData.edges[edgesCount]._outV, this.graph);
+            targetCanvasIdAndXCoord = getCanvasIdAndXCoordByDatabaseId(smallJSONData.edges[edgesCount]._inV, this.graph);
+            sourceCanvasId = sourceCanvasIdAndXCoord[0];
+            targetCanvasId = targetCanvasIdAndXCoord[0];
+            newCanvasEdge = new joint.shapes.fsa.Arrow({
+                source: {id: sourceCanvasId},
+                target: {id: targetCanvasId},
+                attrs: {
+                    '.connection': {stroke: '#600', 'stroke-width': 4}
+                },
+                id: [sourceCanvasId, targetCanvasId].sort().join()
+            });
+            graph.addCell(newCanvasEdge);
+        }
+    }
+}
+function drawAllKnowledgeAndActors() {
+//construct kNodes
+    var knowledgeNodeId = 0;
+    _.each(smallJSONData.vertices, function (node) {
+        var knowledgePerNode = [];
+        _.each(smallJSONData.edges, function (link) {
+            if (link.linkType === "A" && link._outV === node._id) {
+                positionActorNode(link._outV, link._inV, actorNodes, this.graph);
+            }
+            //if link of type K and it source node is the current node
+            if (link.linkType === "K" && link._outV === node._id) {
+                _.each(smallJSONData.vertices, function (knowledgeNode) {
+                    if (knowledgeNode.category === "Knowledge") {
+                        if (knowledgeNode._id === link._inV) {
+                            knowledgePerNode.push(knowledgeNode);
+                        }
+                    }
+                });
+            }
+        });
+        if (knowledgePerNode.length !== 0) {
+            displayKnowledge(knowledgePerNode, node, knowledgeNodeId++, this.graph);
         }
     });
-    if (knowledgePerNode.length !== 0) {
-        displayKnowledge(knowledgePerNode, node, knowledgeNodeId++, this.graph);
-    }
-});
 }
 
 function positionActorNode(sourceNode, targetNode, actorNodes, graph) {
@@ -2848,6 +2915,11 @@ function positionActorNode(sourceNode, targetNode, actorNodes, graph) {
     var y = 0;
     var categoryType = "Actor";
     var name = "";
+    var sourceCanvasIdAndXCoord;
+    var sourceCanvasId;
+    var targetCanvasIdAndXCoord;
+    var targetCanvasId;
+
     _.each(graph.getElements(), function (nodes) {
         if (nodes.get('databaseId') === sourceNode) {
             nodePosition = nodes.get('position');
@@ -2874,7 +2946,8 @@ function positionActorNode(sourceNode, targetNode, actorNodes, graph) {
                         },
                         databaseId: actNode._id,
                         type: 'kb.ActorNode',
-                        nodeData: actNode
+                        nodeData: actNode,
+                        sourceNodeId: sourceNode
                     });
 
                     iconString = iconTable[categoryType];
@@ -2882,15 +2955,18 @@ function positionActorNode(sourceNode, targetNode, actorNodes, graph) {
                     actorNode.attr('./display', 'none');
                     graph.addCell(actorNode);
 
-                    sourceCanvasId = getCanvasIdByDatabaseId(sourceNode, this.graph);
-                    targetCanvasId = getCanvasIdByDatabaseId(targetNode, this.graph);
+                    sourceCanvasIdAndXCoord = getCanvasIdAndXCoordByDatabaseId(sourceNode, this.graph);
+                    targetCanvasIdAndXCoord = getCanvasIdAndXCoordByDatabaseId(targetNode, this.graph);
+                    sourceCanvasId = sourceCanvasIdAndXCoord[0];
+                    targetCanvasId = targetCanvasIdAndXCoord[0];
+
                     actorLink = new joint.shapes.kb.ActorLink({
                         source: {id: sourceCanvasId},
                         target: {id: targetCanvasId},
                         attrs: {
                             '.connection': {stroke: '#600', 'stroke-width': 4}
                         },
-                        id: [sourceCanvasId,targetCanvasId].sort().join()
+                        id: [sourceCanvasId, targetCanvasId].sort().join()
                     });
                     actorLink.attr('./display', 'none');
                     graph.addCell(actorLink);
@@ -2899,82 +2975,190 @@ function positionActorNode(sourceNode, targetNode, actorNodes, graph) {
         }
     });
 }
-function getCanvasIdByDatabaseId(databaseId, graph)
+function getCanvasIdAndXCoordByDatabaseId(databaseId, graph)
 {
-    var returnValue = null;
+    var returnParameters = [];
+    var nodeCanvasId;
+    var nodeXcoord;
     // Go through each of the elements in the graph and find the 
     // element that contains the databaseId 
     _.each(graph.getElements(), function (el) {
         if (el.get('databaseId') === databaseId)
         {
-            returnValue = el.get('id');
+            nodeCanvasId = el.get('id');
+            nodeXcoord = el.get('position').x;
         }
     });
-
-    return returnValue;
+    returnParameters.push(nodeCanvasId);
+    returnParameters.push(nodeXcoord);
+    return returnParameters;
 }
 
 //function that shows all knowledge nodes on the graph when clicked
 function drawAllKnowledgeNodes(data) {
-    
+
     _.each(this.graph.getElements(), function (el) {
         if (data === 'false') {
             if (el.get('type') === "kb.Knowledge") {
+                _.each(this.graph.getElements(), function (parent) {
+                    if (parent.get('databaseId') === el.get('sourceNodeId')) {
+                        if (parent.get('type') === "kb.Rel") {
+                            status = parent.attr('./display');
+                            if (status === "none") {
+                                el.attr('./display', 'none');
+                            } else {
+                                el.attr('./display', 'block');
+                                disableKnowledgeClickToggle = true;
+                            }
+                        } else {
+                            el.attr('./display', 'block');
+                            disableKnowledgeClickToggle = true;
+                        }
+                    }
+                });
                 el.attr('./display', 'block');
+                            disableKnowledgeClickToggle = true;
             }
+             
         } else {
             if (el.get('type') === "kb.Knowledge") {
                 el.attr('./display', 'none');
+                disableKnowledgeClickToggle = false;
             }
         }
     });
-};
+}
+;
+
+//function that toggles the display status of all Backwards link sandf their relNodes when clicked.
+var relNodeArray = [];
+var causalLinkArray = [];
+function drawAllBackwardsLinks(data) {
+    var status;
+    if (data === 'false') {
+        _.each(this.graph.getElements(), function (relNode) {
+            links = graph.getConnectedLinks(relNode, [false, true]);
+
+            if (relNode.get('type') === "kb.Rel") {
+                status = relNode.attr('./display');
+                if (status === "none") {
+                    relNode.attr('./display', 'block');
+                    relNodeArray.push(relNode);
+                }
+            }
+            _.each(links, function (cLinks) {
+                if (cLinks.get('type') === "kb.CausalLink") {
+                    status = cLinks.attr('./display');
+                    if (status === "none") {
+                        cLinks.attr('./display', 'block');
+                        causalLinkArray.push(cLinks);
+                    }
+                }
+            });
+        });
+    } else {
+        _.each(relNodeArray, function (rNode) {
+            rNode.attr('./display', 'none');
+        });
+
+        _.each(causalLinkArray, function (cLink) {
+            cLink.attr('./display', 'none');
+        });
+    }
+
+
+}
+
+//function that shows all Actor nodes and Edges on the graph when clicked
+function drawAllActorNodes(data) {
+    var links = [];
+    var status;
+    _.each(this.graph.getElements(), function (aNode) {
+        links = graph.getConnectedLinks(aNode, [true, false]);
+        if (data === 'false') {
+            if (aNode.get('type') === "kb.ActorNode") {
+                _.each(this.graph.getElements(), function (parent) {
+                    if (parent.get('databaseId') === aNode.get('sourceNodeId')) {
+                        if (parent.get('type') === "kb.Rel") {
+                            status = parent.attr('./display');
+                            if (status === "none") {
+                                aNode.attr('./display', 'none');
+                            } else {
+                                aNode.attr('./display', 'block');
+                                disableActorClickToggle = true;
+                            }
+                        } else {
+                            aNode.attr('./display', 'block');
+                            disableActorClickToggle = true;
+                        }
+                    }
+                });
+            }
+            _.each(links, function (aLinks) {
+                if (aLinks.attributes.type === "kb.ActorLink") {
+                    if (aNode.attributes.type === "kb.ActorNode") {
+                        _.each(this.graph.getElements(), function (parent) {
+                            if (parent.get('databaseId') === aNode.get('sourceNodeId')) {
+                                if (parent.get('type') === "kb.Rel") {
+                                    status = parent.attr('./display');
+                                    if (status === "none") {
+                                        aLinks.attr('./display', 'none');
+                                    } else {
+                                        aLinks.attr('./display', 'block');
+                                        disableActorClickToggle = true;
+                                    }
+                                } else {
+                                    aLinks.attr('./display', 'block');
+                                    disableActorClickToggle = true;
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        } else {
+            disableActorClickToggle = false;
+            if (aNode.get('type') === "kb.ActorNode") {
+                aNode.attr('./display', 'none');
+            }
+            _.each(links, function (aLink) {
+                if (aLink.get('type') === "kb.ActorLink") {
+                    aLink.attr('./display', 'none');
+                }
+            });
+        }
+
+    });
+}
 
 //when the switch is turned on set the gloabl variable getCausalEvidence to true and false when off 
-$(".getCausalEvidenceSummarySwitch").on('click', function() {
-  //determine if the switch is on or off
+$(".getCausalEvidenceSummarySwitch").on('click', function () {
+    //determine if the switch is on or off
     var val = [];
     //wipe path for causal evidence when node is  
-//    hidePath();
-    $(':checkbox:checked').each(function(i){
-      val[i] = $(this).val();
+    $(':checkbox:checked').each(function (i) {
+        val[i] = $(this).val();
     });
-    if (val[0] === "on"){
-        getCausalEvidence=true;
-        $(".findCausalDataStartToFinish").css("display","");
+    if (val[0] === "on") {
+        getCausalEvidence = true;
+        $(".findCausalDataStartToFinish").css("display", "");
+    } else {
+        getCausalEvidence = false;
+        $(".findCausalDataStartToFinish").css("display", "none");
     }
-    else{
-        getCausalEvidence=false;
-        $(".findCausalDataStartToFinish").css("display","none");
-    }
-//    getNodesthing();
 });
 
-function displayCausalEvidence(startNode,endNode) {
-    console.log(startNode,endNode);
-    if(startNode === "undefined" || endNode === "finishNode"){
+function displayCausalEvidence(startNode, endNode) {
+    console.log(startNode, endNode);
+    if (startNode === "undefined" || endNode === "undefined") {
         window.alert("Must select both a start and end node");
-    }
-    
-    else{
-        
-//    $('#btnGetEvidenceSingle').on('click', function () {
-//
-//    // Adjacent DAPSIWR nodes:
+    } else {
+
+
 //    var fromNode = startNode;
 //    var toNode = endNode;
 //    
-//    // Demonstrate result of querying on a link that has no Knowledge (in my local test db):
-//    // var fromNode = "441:3";
-//    // var toNode = "957:3";    
-//    // Valid JSON is returned, but the evidence property contains an empty array []
-//    
-//    // Demonstrate error - the two nodes are not connected (left to right)
-//    // var fromNode = "1053:3";
-//    // var toNode = "1109:3";    
-//        
 //    var web_service_url = "webresources/mkb/getcausalevidence/" + fromNode + "/" + toNode;
-//    alert(web_service_url);
 //
 //    $.ajax({
 //        async: false,
@@ -3007,179 +3191,152 @@ function displayCausalEvidence(startNode,endNode) {
 //    });
 //
 //});
-    
-    var evidence = [];
-    var visualPerformanceArtsData =[];
-    var educationPublicEventsData=[];
-    var nonAcademicPressData=[];
-    var scientificPrintMediaData=[];
-    var broadcastMediaData=[];
-    var filmData=[];
-    var otherData=[];
-    var onlineDigitalMediaData=[];
-    var knowledgeData=[];
-    
-    if (getCausalEvidence === true) {
-        var casualEvidence = causalEvidence;
-        _.each(casualEvidence, function (parentToParent) {
-            _.each(parentToParent.evidence,function(causalEvidenceArray){
+
+        var evidence = [];
+        var visualPerformanceArtsData = [];
+        var educationPublicEventsData = [];
+        var nonAcademicPressData = [];
+        var scientificPrintMediaData = [];
+        var broadcastMediaData = [];
+        var filmData = [];
+        var otherData = [];
+        var onlineDigitalMediaData = [];
+        var knowledgeData = [];
+
+        if (getCausalEvidence === true) {
+            var casualEvidence = causalEvidence;
+            _.each(casualEvidence, function (parentToParent) {
+                _.each(parentToParent.evidence, function (causalEvidenceArray) {
                     evidence.push(causalEvidenceArray);
+                });
             });
-        });
-    //iterate overy every Knowledge node attached and determine how many of each node type occur 
-    _.each(evidence, function (nodeType) {
-        if (nodeType.knowledge.kGroup === 'Visual and Performance Arts') {
-            visualPerformanceArtsData.push(nodeType);
-        }
-        if (nodeType.knowledge.kGroup === 'Education and Public Events') {
-            educationPublicEventsData.push(nodeType);
-        }
-        if (nodeType.knowledge.kGroup === 'Non Academic Press') {
-            nonAcademicPressData.push(nodeType);
-        }
-        if (nodeType.knowledge.kGroup=== 'Scientific Print Media') {
-            scientificPrintMediaData.push(nodeType);
-        }
-        if (nodeType.knowledge.kGroup === 'Broadcast Media') {
-            broadcastMediaData.push(nodeType);
-        }
-        if (nodeType.knowledge.kGroup === 'Film') {
-            filmData.push(nodeType);
+            //iterate overy every Knowledge node attached and determine how many of each node type occur 
+            _.each(evidence, function (nodeType) {
+                if (nodeType.knowledge.kGroup === 'Visual and Performance Arts') {
+                    visualPerformanceArtsData.push(nodeType);
+                }
+                if (nodeType.knowledge.kGroup === 'Education and Public Events') {
+                    educationPublicEventsData.push(nodeType);
+                }
+                if (nodeType.knowledge.kGroup === 'Non Academic Press') {
+                    nonAcademicPressData.push(nodeType);
+                }
+                if (nodeType.knowledge.kGroup === 'Scientific Print Media') {
+                    scientificPrintMediaData.push(nodeType);
+                }
+                if (nodeType.knowledge.kGroup === 'Broadcast Media') {
+                    broadcastMediaData.push(nodeType);
+                }
+                if (nodeType.knowledge.kGroup === 'Film') {
+                    filmData.push(nodeType);
 
-        }
-        if (nodeType.knowledge.kGroup === 'Other') {
-            otherData.push(nodeType);
+                }
+                if (nodeType.knowledge.kGroup === 'Other') {
+                    otherData.push(nodeType);
 
+                }
+                if (nodeType.kGroup === 'Online Digital Media') {
+                    onlineDigitalMediaData.push(nodeType);
+                }
+            });
+            if (visualPerformanceArtsData.length !== 0) {
+                knowledgeData.push(visualPerformanceArtsData);
+            }
+            if (educationPublicEventsData.length !== 0) {
+                knowledgeData.push(educationPublicEventsData);
+            }
+            if (nonAcademicPressData.length !== 0) {
+                knowledgeData.push(nonAcademicPressData);
+            }
+            if (scientificPrintMediaData.length !== 0) {
+                knowledgeData.push(scientificPrintMediaData);
+            }
+            if (broadcastMediaData.length !== 0) {
+                knowledgeData.push(broadcastMediaData);
+            }
+            if (filmData.length !== 0) {
+                knowledgeData.push(filmData);
+            }
+            if (otherData.length !== 0) {
+                knowledgeData.push(otherData);
+            }
+            if (onlineDigitalMediaData.length !== 0) {
+                knowledgeData.push(onlineDigitalMediaData);
+            }
+            displayCausalKnowledge(knowledgeData);
         }
-        if (nodeType.kGroup === 'Online Digital Media') {
-            onlineDigitalMediaData.push(nodeType);
-        }
-    });
-    if(visualPerformanceArtsData.length!==0){
-    knowledgeData.push(visualPerformanceArtsData);
-    }
-    if(educationPublicEventsData.length!==0){
-    knowledgeData.push(educationPublicEventsData);
-    }
-    if(nonAcademicPressData.length!==0){
-    knowledgeData.push(nonAcademicPressData);
-    }
-    if(scientificPrintMediaData.length!==0){
-    knowledgeData.push(scientificPrintMediaData);
-    }
-    if(broadcastMediaData.length!==0){
-    knowledgeData.push(broadcastMediaData);
-    }
-    if(filmData.length!==0){
-    knowledgeData.push(filmData);
-    }
-    if(otherData.length!==0){
-    knowledgeData.push(otherData);
-    }
-    if(onlineDigitalMediaData.length!==0){
-    knowledgeData.push(onlineDigitalMediaData);
-    }
-    displayCausalKnowledge(knowledgeData);
-    }
-    
-$('.viewCausalSummaryButton').unbind("click").on('click', function() {
-var count =1;
-var ctx = document.getElementById('myChart').getContext('2d');
-        $('.displayKnowledgeSummarychart').css("display","");
-        var chart = new Chart(ctx, {
-            // Bar chart
-    exportEnabled: true,
-    type: 'bar',
-    data: {
-      labels: [
-          
-          'Film', 
-          'Education and Public Events', 
-          'Non Academic Press',  
-          'Scientific Print Media', 
-          'Broadcast Media',
-          'Visual and Performance Arts',
-          'Other',
-          'Online Digital Media'],
-      datasets: [
-        {
-          label: "Number of supporting Articles",
-          backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#727272","#f1595f","#599ad3"],
-          data:[
-              filmData.length,
-              educationPublicEventsData.length,
-              nonAcademicPressData.length,
-              scientificPrintMediaData.length,
-              broadcastMediaData.length,
-              visualPerformanceArtsData.length,
-              otherData.length,
-              onlineDigitalMediaData.length
-          ]
-        }
-      ]
-    },
-    options: {
-      legend: { display: false },
-      title: {
-        display: true,
-        text: 'Supporting Causal Evidence'
-      }
-    }
-    
-});
+
+        $('.viewCausalSummaryButton').unbind("click").on('click', function () {
+            var count = 1;
+            var ctx = document.getElementById('myChart').getContext('2d');
+            $('.displayKnowledgeSummarychart').css("display", "");
+            var chart = new Chart(ctx, {
+                // Bar chart
+                exportEnabled: true,
+                type: 'bar',
+                data: {
+                    labels: [
+                        'Film',
+                        'Education and Public Events',
+                        'Non Academic Press',
+                        'Scientific Print Media',
+                        'Broadcast Media',
+                        'Visual and Performance Arts',
+                        'Other',
+                        'Online Digital Media'],
+                    datasets: [
+                        {
+                            label: "Number of supporting Articles",
+                            backgroundColor: ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#c45850", "#727272", "#f1595f", "#599ad3"],
+                            data: [
+                                filmData.length,
+                                educationPublicEventsData.length,
+                                nonAcademicPressData.length,
+                                scientificPrintMediaData.length,
+                                broadcastMediaData.length,
+                                visualPerformanceArtsData.length,
+                                otherData.length,
+                                onlineDigitalMediaData.length
+                            ]
+                        }
+                    ]
+                },
+                options: {
+                    legend: {display: false},
+                    title: {
+                        display: true,
+                        text: 'Supporting Causal Evidence'
+                    }
+                }
+
+            });
 
 //open relevant menu when bar is clicked
-	document.getElementById("myChart").onclick = function(evt){
-            
-            var activePoints = chart.getElementsAtEvent(evt);
-            var firstPoint = activePoints[0];
-            var label = chart.data.labels[firstPoint._index];
-            label = label.replace(/\s/g, '');
-            //only expand the button once
-            if(count ===1){
-           $(".displayKnowledgeperNode").collapse('toggle');
+            document.getElementById("myChart").onclick = function (evt) {
+
+                var activePoints = chart.getElementsAtEvent(evt);
+                var firstPoint = activePoints[0];
+                var label = chart.data.labels[firstPoint._index];
+                label = label.replace(/\s/g, '');
+                //only expand the button once
+                if (count === 1) {
+                    $(".displayKnowledgeperNode").collapse('toggle');
 //            $('.glyphicon', $(".displayKnowledgeperNode"))
 //            .toggleClass('glyphicon-chevron-right')
 //            .toggleClass('glyphicon-chevron-down');
-                count++;
-            }
-            console.log("button data = ",".name"+label+"");
-            $(".name"+label+"").click();
-        };
-     	document.getElementById("exportChart").addEventListener("click",function(){
-    	var ss =chart.toBase64Image();
-        window.location.href = 'data:application/octet-stream;' + ss;
-    });  
-});}
+                    count++;
+                }
+                console.log("button data = ", ".name" + label + "");
+                $(".name" + label + "").click();
+            };
+            document.getElementById("exportChart").addEventListener("click", function () {
+                var ss = chart.toBase64Image();
+                window.location.href = 'data:application/octet-stream;' + ss;
+            });
+        });
     }
-
-//function that shows all Actor nodes and Edges on the graph when clicked
-function drawAllActorNodes(data) {
-
-    _.each(this.graph.getElements(), function (aNode) {
-        links = graph.getConnectedLinks(aNode, [false, true]);
-        if (data === 'false') {
-            if (aNode.get('type') === "kb.ActorNode") {
-                aNode.attr('./display', 'block');
-            }
-            _.each(links, function (aLinks) {
-                if (aLinks.get('type') === "kb.ActorLink") {
-                    aLinks.attr('./display', 'block');
-                }
-            });
-        } else {
-            if (aNode.get('type') === "kb.ActorNode") {
-                aNode.attr('./display', 'none');
-            }
-            _.each(links, function (aLink) {
-                if (aLink.get('type') === "kb.ActorLink") {
-                    aLink.attr('./display', 'none');
-                }
-            });
-        }
-
-    });
 }
+
 //draw knowledge in a cirlce around parent nodes
 function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph) {
 
@@ -3206,7 +3363,8 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
     var otherData = [];
     var onlineDigitalMediaScore = 0;
     var onlineDigitalMediaData = [];
-    
+
+
 
     //find the radius and current postion of the node that the kNodes will be connected to
     _.each(graph.getElements(), function (nodes) {
@@ -3328,7 +3486,7 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
         i++;
     }
     if (filmData.length !== 0) {
-        coOrdinates = getCoOrdinates(width,numUniqueNodes, nodeRadius, i, parentX, parentY);
+        coOrdinates = getCoOrdinates(width, numUniqueNodes, nodeRadius, i, parentX, parentY);
         kNodeX = coOrdinates[0];
         kNodeY = coOrdinates[1];
         if (kNodeX < parentX) {
@@ -3350,7 +3508,7 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
         i++;
     }
     if (onlineDigitalMediaData.length !== 0) {
-        coOrdinates = getCoOrdinates(width,numUniqueNodes, nodeRadius, i, parentX, parentY);
+        coOrdinates = getCoOrdinates(width, numUniqueNodes, nodeRadius, i, parentX, parentY);
         kNodeX = coOrdinates[0];
         kNodeY = coOrdinates[1];
         if (kNodeX < parentX) {
@@ -3364,7 +3522,14 @@ function displayKnowledge(knowledgeNodes, connectedNode, knowledgeNodeId, graph)
 
 //draw kNode with number of evidence on the right hand side
 function drawKNode(data, knowledgeNodeId, connectedNode, uniqueId, x, y) {
-    numberOfEvidence = data.length;
+    var kGroup;
+
+    var sourceCanvasIdAndXCoord;
+    var sourceCellId;
+    var targetCanvasIdAndXCoord;
+    var targetCellId;
+
+    var numberOfEvidence = data.length;
     var knowledgeNodes = new joint.shapes.kb.Knowledge({
         position: {x: x, y: y},
         size: {width: 25, height: 25},
@@ -3378,19 +3543,26 @@ function drawKNode(data, knowledgeNodeId, connectedNode, uniqueId, x, y) {
         },
         type: 'kb.Knowledge',
         supportingKnowledge: data,
-        databaseId: '#' + knowledgeNodeId + uniqueId
+        databaseId: '#' + knowledgeNodeId + uniqueId,
+        sourceNodeId: connectedNode._id
+
     });
-    iconString = iconTable[data[0]._label];
-    knowledgeNodes.attr('image/xlink:href', icons[iconString]);
+    kGroup = data[0].kGroup;
+    kGroup = kGroup.replace(/\s/g, '');
+    kGroup = iconTable[kGroup]
+    knowledgeNodes.attr('image/xlink:href', icons[kGroup]);
     knowledgeNodes.attr('./display', 'none');
     graph.addCell(knowledgeNodes);
 
     //draw link and add it to the graph. But make it invisible. Neccessary to find which knowledge nodes are linked to what
-    sourceCellId = getCanvasIdByDatabaseId(connectedNode._id, this.graph);
-    targetCellId = getCanvasIdByDatabaseId(knowledgeNodes.get('databaseId'), this.graph);
+    sourceCanvasIdAndXCoord = getCanvasIdAndXCoordByDatabaseId(connectedNode._id, this.graph);
+    targetCanvasIdAndXCoord = getCanvasIdAndXCoordByDatabaseId(knowledgeNodes.get('databaseId'), this.graph);
+    sourceCellId = sourceCanvasIdAndXCoord[0];
+    targetCellId = targetCanvasIdAndXCoord[0];
     var knowledgeLink = new joint.shapes.kb.MediaLink({
         source: {id: sourceCellId},
-        target: {id: targetCellId}
+        target: {id: targetCellId},
+        id: [sourceCellId, targetCellId].sort().join()
     });
 
     knowledgeLink.attr('./display', 'none');
@@ -3401,6 +3573,12 @@ function drawKNode(data, knowledgeNodeId, connectedNode, uniqueId, x, y) {
 //draw kNodes to the left of the parent node
 function drawReverseKNode(data, knowledgeNodeId, connectedNode, uniqueId, x, y) {
     numberOfEvidence = data.length;
+
+    var sourceCanvasIdAndXCoord;
+    var sourceCellId;
+    var targetCanvasIdAndXCoord;
+    var targetCellId;
+
     var knowledgeNodes = new joint.shapes.kb.ReverseKnowledge({
         position: {x: x, y: y},
         size: {width: 25, height: 25},
@@ -3415,16 +3593,21 @@ function drawReverseKNode(data, knowledgeNodeId, connectedNode, uniqueId, x, y) 
             }
         },
         supportingKnowledge: data,
-        databaseId: '#' + knowledgeNodeId + uniqueId
+        databaseId: '#' + knowledgeNodeId + uniqueId,
+        sourceNodeId: connectedNode._id
     });
-    iconString = iconTable[data[0]._label];
+    kGroup = data[0].kGroup;
+    kGroup = kGroup.replace(/\s/g, '');
+    iconString = iconTable[kGroup]
     knowledgeNodes.attr('image/xlink:href', icons[iconString]);
     knowledgeNodes.attr('./display', 'none');
     graph.addCell(knowledgeNodes);
 
     //draw link and add it to the graph. But make it invisible. Neccessary to find which knowledge nodes are linked to what
-    sourceCellId = getCanvasIdByDatabaseId(connectedNode._id, this.graph);
-    targetCellId = getCanvasIdByDatabaseId(knowledgeNodes.get('databaseId'), this.graph);
+    sourceCanvasIdAndXCoord = getCanvasIdAndXCoordByDatabaseId(connectedNode._id, this.graph);
+    targetCanvasIdAndXCoord = getCanvasIdAndXCoordByDatabaseId(knowledgeNodes.get('databaseId'), this.graph);
+    sourceCellId = sourceCanvasIdAndXCoord[0];
+    targetCellId = targetCanvasIdAndXCoord[0];
     var knowledgeLink = new joint.shapes.kb.MediaLink({
         source: {id: sourceCellId},
         target: {id: targetCellId}
@@ -3487,8 +3670,21 @@ $(".displayActorData").on('click', "div.list-group-item", function () {
             .toggleClass('glyphicon-chevron-down');
 });
 
+//Access each individual component of the knowledge on click i.e each of the 8 different types of knowledge
+$(".displayKnowledgeData").on('click', "div.list-group-item", function () {
+    $('.glyphicon', this)
+            .toggleClass('glyphicon-chevron-right')
+            .toggleClass('glyphicon-chevron-down');
+});
+
 $(".displayKnowledgeperNode").on('click', 'div.viewExtraKnowledge', function () {
-    $(".hiddenKnowledge").css("display", "");
+
+    var status = this.attr('./display');
+    if (status === 'none') {
+        $(".hiddenKnowledge").css("display", "");
+    } else {
+        $(".hiddenKnowledge").css("display", "none");
+    }
 });
 $(".displayNodeDataButton").click(function () {
 //remove the display attribute from the knowledge div
@@ -3512,10 +3708,20 @@ $(".displayActorsDataButton").click(function () {
             .toggleClass('glyphicon-chevron-right')
             .toggleClass('glyphicon-chevron-down');
 });
- 
-function displayActorNodes(actorNodeData) {
+
+$(".displayKnowledgeDataButton").click(function () {
+//remove the display attribute from the knowledge div
+    $(".displayKnowledgeData").css("display", "");
+//as the user clicks the button the knowledge is toggled
+    $(".displayKnowledgeData").collapse('toggle');
+//update the glyphcion    
+    $('.glyphicon', this)
+            .toggleClass('glyphicon-chevron-right')
+            .toggleClass('glyphicon-chevron-down');
+});
+
+function displayActorNodesData(actorNodeData) {
     //make the button visable
-    console.log(actorNodeData);
     $(".displayActorsDataButton").css('display', 'block');
     var i = 0;
     _.each(actorNodeData, function (actor) {
@@ -3536,7 +3742,6 @@ function displayActorNodes(actorNodeData) {
         i++;
     });
 }
-
 function displayNodeData(nodeData) {
     //remove the previous contents of the div
     $('.displayActorData').empty();
@@ -3551,9 +3756,9 @@ function displayNodeData(nodeData) {
         <textarea class="form-control" rows="auto" id="comment">' + nodeData[x] + '</textarea></div>'));
         }
     }
- }
+}
 
-function displayNodeKnowledge(knowledgeData) {
+function displayNodeKnowledgeData(knowledgeData) {
     //make the button visable
     $(".displayKnowledgeForNodeButton").css('display', '');
     var i = 0;
@@ -3562,12 +3767,16 @@ function displayNodeKnowledge(knowledgeData) {
     _.each(knowledgeData, function (knowledge) {
         var j = 1;
         var x = 0;
+        var count = 1;
         $(".displayKnowledgeperNode").append($('<div href="#item-' + i + '" class="list-group-item" data-toggle="collapse">\n\
             <i class="glyphicon glyphicon-chevron-right"></i><a href="www.someURL.de">' + knowledge[0].kGroup + '</a>\n\
             <span class="badge">' + knowledge.length + '</span>'));
-        
+
         $(".displayKnowledgeperNode").append($('<div href="#item-' + i + '.' + i + '" class="list-group collapse \n\
         knowledgeItemNumber' + i + '" style="padding-left:20px; padding-right:20px;background-color:white" id="item-' + i + '">'));
+
+        $(".displayKnowledgeperNode").append($('<div class="list-group collapse hiddenKnowledgeItemNumber' + i + '" style="padding-left:20px; padding-right:20px;background-color:white" id="item-' + i + '.' + i + '""><a href="#">Click to sahite talk</a>'));
+
         //for each specific knowledge type render each article
         _.each(knowledge, function (k) {
             $(".knowledgeItemNumber" + i + "").append($('<span class="badge">' + j + '</span> <br>'));
@@ -3578,11 +3787,20 @@ function displayNodeKnowledge(knowledgeData) {
                     } else if (x === 'name' || x === 'description' || x === 'rating') {
                         $(".knowledgeItemNumber" + i + "").append($('<div class="form-group" style="padding-top:10px;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + k[x] + '</textarea></div>'));
                     } else {
-                        $(".knowledgeItemNumber" + i + "").append($('<div class="form-group hiddenKnowledge" style="padding-top:10px;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + k[x] + '</textarea></div>'));
-                    }}
+                        $(".knowledgeItemNumber" + i + "").append($('<div class="form-group hiddenKnowledge" style="padding-top:10px; display:none;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + k[x] + '</textarea></div>'));
+                        if (count === (Object.keys(k).length)) {
+                            $(".knowledgeItemNumber" + i + "").append($('<div class ="viewExtraKnowledge" style="padding-left:10px; padding-bottom:10px;"><a href="#">Click to view more details....</a></div>'));
+                        }
+                    }
+//            $( ".itemNumber"+i+"" ).append($('<div class="form-group"> <label for="usr">Description</label><p contenteditible ="false" ><textarea class="form-control" rows="auto" id="comment">'+k.description+'</textarea></p></div>'));
+//            $( ".itemNumber"+i+"" ).append($('<div class="form-group"> <label for="usr">Url:&nbsp;&nbsp;</label><a href="'+k.resourceURL+'" target="_blank">Click to see webpage</a></div>'));
+                }
+                ;
+                count++;
             }
-            //line break to differentcaite between articles
-            $(".knowledgeItemNumber" + i + "").append('<hr/>');
+            ;
+//        $( ".displayKnowledgeperNode" ).append($('<a href="#">Click to sahite talk</a>'));
+            $(".knowledgeItemNumber" + i + "").append('<hr/>');//line break to diffrencaite between articles
             j++;
         });
         i++;
@@ -3591,17 +3809,17 @@ function displayNodeKnowledge(knowledgeData) {
 
 //appedn Causal knowledeg into the knowledge viewer on the right hand side
 function displayCausalKnowledge(causalData) {
-    
+
     //remove the previous contents of the div
     $('.displayKnowledgeperNode').empty();
     //make the button visable
     $(".displayKnowledgeForNodeButton").css('display', '');
-    
+
     $('.displayActorData').empty();
     //make the button visable
     $(".displayActorsDataButton").css('display', 'none');
-    
-     $('.displayNodeData').empty();
+
+    $('.displayNodeData').empty();
     //make the button visable
     $(".displayNodeDataButton").css('display', 'none');
 
@@ -3614,7 +3832,7 @@ function displayCausalKnowledge(causalData) {
         var count = 1;
         var className = knowledge[0].knowledge.kGroup;
         className = className.replace(/\s/g, '');
-        $(".displayKnowledgeperNode").append($('<div href="#item-' + i + '" class="list-group-item name'+ className+'" data-toggle="collapse"><i class="glyphicon glyphicon-chevron-right"></i><a href="www.someURL.de">' + knowledge[0].knowledge.kGroup + '</a><span class="badge">' + knowledge.length + '</span>'));
+        $(".displayKnowledgeperNode").append($('<div href="#item-' + i + '" class="list-group-item name' + className + '" data-toggle="collapse"><i class="glyphicon glyphicon-chevron-right"></i><a href="www.someURL.de">' + knowledge[0].knowledge.kGroup + '</a><span class="badge">' + knowledge.length + '</span>'));
         $(".displayKnowledgeperNode").append($('<div href="#item-' + i + '.' + i + '" class="list-group collapse knowledgeItemNumber' + i + '" style="padding-left:20px; padding-right:20px;background-color:white" id="item-' + i + '">'));
 
         _.each(knowledge, function (k) {
@@ -3626,7 +3844,7 @@ function displayCausalKnowledge(causalData) {
                     } else if (x === 'className' || x === 'description' || x === 'rating') {
                         $(".knowledgeItemNumber" + i + "").append($('<div class="form-group" style="padding-top:10px;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + k.knowledge[x] + '</textarea></div>'));
                     } else {
-                        $(".knowledgeItemNumber" + i + "").append($('<div class="form-group hiddenKnowledge" style="padding-top:10px;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + k.knowledge[x] + '</textarea></div>'));                       
+                        $(".knowledgeItemNumber" + i + "").append($('<div class="form-group hiddenKnowledge" style="padding-top:10px;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + k.knowledge[x] + '</textarea></div>'));
                     }
                 }
                 count++;
@@ -3637,5 +3855,5 @@ function displayCausalKnowledge(causalData) {
         });
         i++;
     });
-     $(".viewCausalSummaryButton").css('display', '');
+    $(".viewCausalSummaryButton").css('display', '');
 }

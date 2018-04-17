@@ -10,145 +10,13 @@ and open the template in the editor.
     <head>
         <title>TODO supply a title hello</title>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" type="text/css" href="joint.ui.inspector.css"/>
+      
         <link rel="stylesheet" type="text/css" href="joint.css">
-        <link rel="stylesheet" type="text/css" href="erd.css">
-        <link rel="stylesheet" type="text/css" href="joint.ui.contextToolbar.css">
-        <link rel="stylesheet" type="text/css" href="joint.ui.popup.css">
-        <link rel="stylesheet" type="text/css" href="joint.ui.inspector.css">
+        <link rel="stylesheet" type="text/css" href="custom-CSS.css">
         <link rel="stylesheet" type="text/css" href="joint.ui.paperScroller.css">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="joint.ui.navigator.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-        <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.6/Chart.min.js'></script>
 
-        <style>
-            /* Remove the navbar's default margin-bottom and rounded borders */ 
-            .navbar {
-                margin-bottom: 0;
-                border-radius: 0;
-
-            }
-
-            /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
-            .row.content {height: 450px}
-
-            /* Set gray background color and 100% height */
-            .sidenav {
-                padding-top: 20px;
-                background-color: #f1f1f1;
-                height: 100%;
-            }
-
-            /* Set black background color, white text and some padding */
-            footer {
-                background-color: #555;
-                color: white;
-                padding: 15px;
-            }
-            /*body { padding-top: 50px; }*/
-
-            /* On small screens, set height to 'auto' for sidenav and grid */
-            /* On small screens, set height to 'auto' for sidenav and grid */
-            @media screen and (max-width: 960px) {
-                body { padding-top: 0px; }
-                .sidenav {
-                    height: auto;
-                    padding: 15px;
-                }
-                .row.content {height: auto;} 
-            }
-            hr { 
-                display: block;
-                margin-top: 0.5em;
-                margin-bottom: 0.5em;
-                margin-left: auto;
-                margin-right: auto;
-                border-style: inset;
-                border-width: 1px;
-            }
-            /* The switch - the box around the slider */
-            .label{
-                margin-bottom: -5px;
-            }
-            .switch {
-                position: relative;
-                display: inline-block;
-                width: 60px;
-                height: 34px;
-            }
-
-            /* Hide default HTML checkbox */
-            .switch input {display:none;}
-
-            /* The slider */
-            .slider {
-                position: absolute;
-                cursor: pointer;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: #ccc;
-                -webkit-transition: .4s;
-                transition: .4s;
-            }
-
-            .slider:before {
-                position: absolute;
-                content: "";
-                height: 26px;
-                width: 26px;
-                left: 4px;
-                bottom: 4px;
-                background-color: white;
-                -webkit-transition: .4s;
-                transition: .4s;
-            }
-
-            input:checked + .slider {
-                background-color: #2196F3;
-            }
-
-            input:focus + .slider {
-                box-shadow: 0 0 1px #2196F3;
-            }
-
-            input:checked + .slider:before {
-                -webkit-transform: translateX(26px);
-                -ms-transform: translateX(26px);
-                transform: translateX(26px);
-            }
-
-            /* Rounded sliders */
-            .slider.round {
-                border-radius: 34px;
-            }
-
-            .slider.round:before {
-                border-radius: 50%;
-            }
-            .closePopup {
-                position: absolute;
-                left: 100px;
-                top: 150px;
-            }
-            @media print {
-                body {
-                    visibility: hidden;
-                }
-                .myChart,canvas {
-                    visibility: visible;
-                }
-                .myChart,canvas {
-                    position: absolute;
-                    left: 70px;
-                    top: 100px;
-
-                }
-            }
-        </style>
     </head>
     <body>
         <div class ='fluid-container'>
@@ -170,12 +38,11 @@ and open the template in the editor.
                                 aria-pressed="false" onclick="drawAllActorNodes(this.getAttribute('aria-pressed'));">
                             Toggle Actors
                         </button>
-                        <!--                        <button class="btn btn-danger navbar-btn activateActorNodesButton" data-toggle="button" aria-pressed="false" onclick="displayOnlyActorAndParent(this.getAttribute('aria-pressed'));">
-                                                    Only Actors and Parent
-                                                </button>-->
-<!--                        <button class="btn btn-danger navbar-btn activateViewCauselEvidenceButton" data-toggle="button" aria-pressed="false" onclick="displayCausalEvidence(this.getAttribute('ariagetAttribute-pressed'));">
-                            test causal evidence summary
-                        </button>-->
+                        <!--Button to show all Backwards Links-->
+                        <button class="btn btn-danger navbar-btn activateBackwardsLinksButton" data-toggle="button" 
+                                aria-pressed="false" onclick="drawAllBackwardsLinks(this.getAttribute('aria-pressed'));">
+                            Toggle Backwards Links
+                        </button>
                         </div>
                         <div class = "navbar-nav">
                            
@@ -186,7 +53,7 @@ and open the template in the editor.
                             </label>
                         </button>
                         </div>
-                         <div class = "navbar-nav findCausalDataStartToFinish form-inline" style ="display:none;">
+<!--                         <div class = "navbar-nav findCausalDataStartToFinish form-inline" style ="display:none;">
                             <div class="form-group">
                                 <input type="text" class="form-control" id="startNode" value="startNodeId" name ="startNodeId" placeholder="Select Start" style="display:none;">
                                 <input type="text" class="form-control" id="startNodeName" value="startNodeName" name ="startNodeName" placeholder="Select Start">
@@ -198,8 +65,8 @@ and open the template in the editor.
                             </div>
                             <button class="btn btn-default navbar-btn" onclick="displayCausalEvidence(document.getElementById('startNode').value,document.getElementById('finishNode').value);">Submit</button>
                  
-                         </div>
-                    </div>
+                         </div>-->
+                    <!--</div>-->
 
 
                 </div>
@@ -230,13 +97,14 @@ and open the template in the editor.
                     Toggle Knowledge
                 </button>
                 <ul id="collapsableKnowledgeViewer" class="list-group displayKnowledgeperNode" style="display:none;">
-                </ul>
-
+                </ul>           
+                
                 <button type="button" class="btn btn-primary displayActorsDataButton" style="display:none; width:100%;" >
                     <span  class = "glyphicon glyphicon-chevron-right pull-left"></span>
                     Toggle Actor Data
                 </button>
                 <ul id="collapsableActorDataViewer" class="list-group displayActorData" style="display:none;">
+                   
                 </ul>
                 <button type="button" class="btn btn-primary viewCausalSummaryButton"  data-toggle="modal" 
                         data-target="#myModal" value= "off" style="display:none; width:100%;" >
@@ -278,28 +146,16 @@ and open the template in the editor.
         <!--Dependancies-->
         <script src="jquery.js"></script>
         <script src="lodash.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="bootstrap.min.js"></script>
         <script src="backbone.js"></script>
         <script src="joint.js"></script>
-        <script src ="rappid.js"></script>
+        <script src="rappid.js"></script>
         <script src="joint.ui.navigator.js"></script>
-        <script src="joint.ui.inspector.js"></script>
-        <script src="chart.js"></script>
         <script src ="rappid.css"></script>
-        <script src ="responsive.css"></script>
         <script src="joint.ui.paperScroller.js"></script>
-        <script src="joint.ui.contextToolbar.js"></script>
-        <script src="joint.ui.popup.js"></script>    
-        <script src="https://d3js.org/d3.v4.min.js"></script>
-        <script src ="orientDB.js"></script>
-        <script src="erd.js"></script>
-        <script src="joint.ui.inspector.js"></script>
-        <script src="joint.format.svg.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
-        <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+        <script src="chartjs.min.js"></script>
         <script src="joint.alg.dijkstra.js"></script>
         <script src="joint.alg.priorityQueue.js"></script>
-        <script src="samplejson.js"></script> 
+        <script src="mainViewer.js"></script> 
     </body>
 </html>

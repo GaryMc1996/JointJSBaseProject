@@ -128,11 +128,11 @@ Vertex markers are `<circle>` elements that appear at connection vertex position
 .link-tools .tool-options {
    display: none;       /* by default, we don't display link options tool */
 }
-.joint-link:hover .marker-vertices,
+/*.joint-link:hover .marker-vertices,
 .joint-link:hover .marker-arrowheads,
 .joint-link:hover .link-tools {
    opacity: 1;
-}
+}*/
 
 /* <circle> element used to remove a vertex */
 .marker-vertex-remove {
@@ -140,17 +140,17 @@ Vertex markers are `<circle>` elements that appear at connection vertex position
    opacity: .1;
 }
 
-.marker-vertex-group:hover .marker-vertex-remove {
+/*.marker-vertex-group:hover .marker-vertex-remove {
    opacity: 1;
-}
+}*/
 
 .marker-vertex-remove-area {
    opacity: .1;
    cursor: pointer;
 }
-.marker-vertex-group:hover .marker-vertex-remove-area {
+/*.marker-vertex-group:hover .marker-vertex-remove-area {
    opacity: 1;
-}
+}*/
 
 /*
 Example of custom changes (in pure CSS only!):
@@ -210,17 +210,17 @@ Do not allow adding new vertices: .connection-wrap { pointer-events: none; }
 .joint-link.joint-theme-dark .marker-vertex {
     fill: #5652DB;
 }
-.joint-link.joint-theme-dark .marker-vertex:hover {
+/*.joint-link.joint-theme-dark .marker-vertex:hover {
     fill: #8E8CE1;
     stroke: none;
-}
+}*/
 .joint-link.joint-theme-dark .marker-arrowhead {
     fill: #5652DB;
 }
-.joint-link.joint-theme-dark .marker-arrowhead:hover {
+/*.joint-link.joint-theme-dark .marker-arrowhead:hover {
     fill: #8E8CE1;
     stroke: none;
-}
+}*/
 /* <circle> element used to remove a vertex */
 .joint-link.joint-theme-dark .marker-vertex-remove-area {
     fill: green;
@@ -246,10 +246,10 @@ Do not allow adding new vertices: .connection-wrap { pointer-events: none; }
     opacity: 0;
     cursor: move;
 }
-.joint-link.joint-theme-default .connection-wrap:hover {
+/*.joint-link.joint-theme-default .connection-wrap:hover {
     opacity: .4;
     stroke-opacity: .4;
-}
+}*/
 .joint-link.joint-theme-default .connection {
     stroke-linejoin: round;
 }
@@ -264,10 +264,10 @@ Do not allow adding new vertices: .connection-wrap { pointer-events: none; }
 .joint-link.joint-theme-default .marker-vertex {
     fill: #1ABC9C;
 }
-.joint-link.joint-theme-default .marker-vertex:hover {
+/*.joint-link.joint-theme-default .marker-vertex:hover {
     fill: #34495E;
     stroke: none;
-}
+}*/
 
 .joint-link.joint-theme-default .marker-arrowhead {
     fill: #1ABC9C;

@@ -2080,7 +2080,6 @@ var pageLoadTimer;
 var disableKnowledgeClickToggle = false;
 var disableActorClickToggle = false;
 var actorNodes = [];
-//console.log(pageLoadTimer);
 var length = smallJSONData.vertices.length;
 var getCausalEvidence = false;
 var icons = joint.shapes.kb.icons;
@@ -2179,7 +2178,7 @@ var paper = new joint.dia.Paper({
 });
 //
 var paperScroller = new joint.ui.PaperScroller({
-    paper: paper,
+    paper: paper
 });
 
 $('.paper-container').append(paperScroller.render().el);
@@ -2188,7 +2187,7 @@ drawMainGraph();
 function drawNavigator() {
     var navigator = this.navigator = new joint.ui.Navigator({
         paperScroller: this.paperScroller,
-        width: 250,
+        width: 640,
         height: 235,
         padding: 10,
         zoomOptions: {max: 5, min: 0.2}
@@ -2243,27 +2242,23 @@ paper.on('cell:pointerdown', function (cellView) {
         if (cellView.model.attributes.type === "kb.Knowledge") {
             knowledegeNodeData.push(cellView.model.attributes.supportingKnowledge);
         } else {
-            console.log("here");
             nodeData = cellView.model.attributes.nodeData;
         }
         nodeType = cellView.model.attributes.type;
-        console.log(cellView);
         //cycle through all cells in the graph
-//    if(disableKnowledgeClickToggle===false){
         graph.get('cells').find(function (cell) {
-
             //find out what knowledge nodes and Actor nodes are connected to a particular node. Don't
             //need to consider nodes of type knowledge and Actor for this
             if (cell.get('type') !== 'kb.Knowledge' && cell.get('type') !== 'kb.ActorNode') {
                 //if the id of the a cell in graph matchs the one that was clicked
                 if (cell.id === cellView.model.id) {
                     nodes = graph.getNeighbors(cell, [false, true]);
-                    _.each(nodes, function (kNode) {
-                        if (kNode.get('type') === 'kb.Knowledge') {
-                            nodeKnowledgeData.push(kNode.attributes.supportingKnowledge);
+                    _.each(nodes, function (connectedNode) {
+                        if (connectedNode.get('type') === 'kb.Knowledge') {
+                            nodeKnowledgeData.push(connectedNode.attributes.supportingKnowledge);
                         }
-                        if (kNode.get('type') === 'kb.ActorNode') {
-                            nodeActors.push(kNode.attributes.nodeData);
+                        if (connectedNode.get('type') === 'kb.ActorNode') {
+                            nodeActors.push(connectedNode.attributes.nodeData);
                         }
                     });
                 }
@@ -2317,13 +2312,13 @@ paper.on('cell:pointerdown', function (cellView) {
 
         //if conditions are met append the knowledge on the right hand side viewer
         if (nodeType === "kb.Knowledge" && knowledegeNodeData.length !== 0) {
-            displayNodeKnowledgeData(knowledegeNodeData);
+            displayNodeKnowledgeData(knowledegeNodeData,true);
         } else {
             if (nodeType !== "kb.Rel" && nodeData.length !== null) {
                 displayNodeData(nodeData);
             }
             if (nodeKnowledgeData.length !== 0) {
-                displayNodeKnowledgeData(nodeKnowledgeData);
+                displayNodeKnowledgeData(nodeKnowledgeData,false);
             }
             if (nodeActors.length !== 0) {
                 displayActorNodesData(nodeActors);
@@ -2395,7 +2390,9 @@ paper.on('cell:pointerdown', function (cellView) {
                 cellView.model.attr(attrs.elementHighlighted);
                 //call display evidence and send node id's to function
                 console.log(selected.model.attributes.databaseId);
+                if(path.length!==0){
                 displayCausalEvidence(selected.model.attributes.databaseId, cellView.model.attributes.databaseId);
+            }
             }
         });
 
@@ -2403,10 +2400,8 @@ paper.on('cell:pointerdown', function (cellView) {
             hidePath();
             selected.unhighlight();
         });
-// Helpers.
 
         var pathLinks = [];
-
         function hidePath() {
 
             _.each(pathLinks, function (link) {
@@ -2417,14 +2412,11 @@ paper.on('cell:pointerdown', function (cellView) {
 
         function showPath(path) {
 
-//    $('#path').text(path.join(' -> '));
             for (var i = 0; i < path.length; i++) {
                 var curr = path[i];
                 var next = path[i + 1];
                 if (next) {
-//             console.log("sending thsi request now ");
-                    var link = graph.getCell([curr, next].sort().join());
-//           console.log("what is returned ?",link);
+                var link = graph.getCell([curr, next].sort().join());
 //            link.label(0, { position: .5, attrs: {
 //                text: { text: ' ' + (i + 1) + ' ', 'font-size': 10, fill: 'white' },
 //                rect: { rx: 8, ry: 8, fill: 'black', stroke: 'black', 'stroke-width': 5 }
@@ -2438,9 +2430,7 @@ paper.on('cell:pointerdown', function (cellView) {
 
     }
 });
-function test(cellView) {
-    console.log("what event does this fire for", cellView);
-}
+
 function getNodesthing() {
     var selected;
     var directed = true;
@@ -3002,7 +2992,7 @@ function drawAllKnowledgeNodes(data) {
             if (el.get('type') === "kb.Knowledge") {
                 _.each(this.graph.getElements(), function (parent) {
                     if (parent.get('databaseId') === el.get('sourceNodeId')) {
-                        if (parent.get('type') === "kb.Rel") {
+                        if (parent.get('type') === "kb.Rel") {  
                             status = parent.attr('./display');
                             if (status === "none") {
                                 el.attr('./display', 'none');
@@ -3016,10 +3006,7 @@ function drawAllKnowledgeNodes(data) {
                         }
                     }
                 });
-                el.attr('./display', 'block');
-                            disableKnowledgeClickToggle = true;
-            }
-             
+            } 
         } else {
             if (el.get('type') === "kb.Knowledge") {
                 el.attr('./display', 'none');
@@ -3056,9 +3043,43 @@ function drawAllBackwardsLinks(data) {
                 }
             });
         });
+        if (disableKnowledgeClickToggle) {
+            _.each(relNodeArray, function (rNode) {
+                connectedNodes = graph.getNeighbors(rNode, [false, true]);
+                _.each(connectedNodes, function (cNode) {
+                    if (cNode.get('type') === 'kb.Knowledge') {
+                        cNode.attr('./display', 'block');
+                    }
+                });
+            });
+        }
+         if (disableActorClickToggle) {
+            _.each(relNodeArray, function (rNode) {
+                connectedNodes = graph.getNeighbors(rNode, [false, true]);
+                connectedLinks = graph.getConnectedLinks(rNode, [false, true]);
+                _.each(connectedNodes, function (cNode) {
+                    if (cNode.get('type') === 'kb.ActorNode') {
+                        cNode.attr('./display', 'block');
+                    }
+                });
+                _.each(connectedLinks, function (cNode) {
+                    if (cNode.get('type') === 'kb.ActorLink') {
+                        cNode.attr('./display', 'block');
+                    }
+                });
+            });
+        }
     } else {
         _.each(relNodeArray, function (rNode) {
             rNode.attr('./display', 'none');
+            connectedNodes = graph.getNeighbors(rNode, [false, true]);
+            connectedLinks = graph.getConnectedLinks(rNode, [false, true]);
+            _.each(connectedNodes, function(cNode){
+                cNode.attr('./display', 'none');
+            });
+            _.each(connectedLinks, function(cLinks){
+               cLinks.attr('./display', 'none'); 
+            });
         });
 
         _.each(causalLinkArray, function (cLink) {
@@ -3149,7 +3170,6 @@ $(".getCausalEvidenceSummarySwitch").on('click', function () {
 });
 
 function displayCausalEvidence(startNode, endNode) {
-    console.log(startNode, endNode);
     if (startNode === "undefined" || endNode === "undefined") {
         window.alert("Must select both a start and end node");
     } else {
@@ -3326,13 +3346,12 @@ function displayCausalEvidence(startNode, endNode) {
 //            .toggleClass('glyphicon-chevron-down');
                     count++;
                 }
-                console.log("button data = ", ".name" + label + "");
                 $(".name" + label + "").click();
             };
-            document.getElementById("exportChart").addEventListener("click", function () {
-                var ss = chart.toBase64Image();
-                window.location.href = 'data:application/octet-stream;' + ss;
-            });
+//            document.getElementById("exportChart").addEventListener("click", function () {
+//                var ss = chart.toBase64Image();
+//                window.location.href = 'data:application/octet-stream;' + ss;
+//            });
         });
     }
 }
@@ -3758,7 +3777,7 @@ function displayNodeData(nodeData) {
     }
 }
 
-function displayNodeKnowledgeData(knowledgeData) {
+function displayNodeKnowledgeData(knowledgeData,displayAll) {
     //make the button visable
     $(".displayKnowledgeForNodeButton").css('display', '');
     var i = 0;
@@ -3775,8 +3794,6 @@ function displayNodeKnowledgeData(knowledgeData) {
         $(".displayKnowledgeperNode").append($('<div href="#item-' + i + '.' + i + '" class="list-group collapse \n\
         knowledgeItemNumber' + i + '" style="padding-left:20px; padding-right:20px;background-color:white" id="item-' + i + '">'));
 
-        $(".displayKnowledgeperNode").append($('<div class="list-group collapse hiddenKnowledgeItemNumber' + i + '" style="padding-left:20px; padding-right:20px;background-color:white" id="item-' + i + '.' + i + '""><a href="#">Click to sahite talk</a>'));
-
         //for each specific knowledge type render each article
         _.each(knowledge, function (k) {
             $(".knowledgeItemNumber" + i + "").append($('<span class="badge">' + j + '</span> <br>'));
@@ -3787,19 +3804,14 @@ function displayNodeKnowledgeData(knowledgeData) {
                     } else if (x === 'name' || x === 'description' || x === 'rating') {
                         $(".knowledgeItemNumber" + i + "").append($('<div class="form-group" style="padding-top:10px;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + k[x] + '</textarea></div>'));
                     } else {
-                        $(".knowledgeItemNumber" + i + "").append($('<div class="form-group hiddenKnowledge" style="padding-top:10px; display:none;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + k[x] + '</textarea></div>'));
-                        if (count === (Object.keys(k).length)) {
-                            $(".knowledgeItemNumber" + i + "").append($('<div class ="viewExtraKnowledge" style="padding-left:10px; padding-bottom:10px;"><a href="#">Click to view more details....</a></div>'));
-                        }
+                        if(displayAll){
+                        $(".knowledgeItemNumber" + i + "").append($('<div class="form-group hiddenKnowledge" style="padding-top:10px;"><label style="text-transform:capitalize" for="usr">&nbsp;&nbsp;' + x + '</label><textarea class="form-control" rows="auto" id="comment">' + k[x] + '</textarea></div>'));
                     }
-//            $( ".itemNumber"+i+"" ).append($('<div class="form-group"> <label for="usr">Description</label><p contenteditible ="false" ><textarea class="form-control" rows="auto" id="comment">'+k.description+'</textarea></p></div>'));
-//            $( ".itemNumber"+i+"" ).append($('<div class="form-group"> <label for="usr">Url:&nbsp;&nbsp;</label><a href="'+k.resourceURL+'" target="_blank">Click to see webpage</a></div>'));
-                }
+                    } }
                 ;
                 count++;
             }
             ;
-//        $( ".displayKnowledgeperNode" ).append($('<a href="#">Click to sahite talk</a>'));
             $(".knowledgeItemNumber" + i + "").append('<hr/>');//line break to diffrencaite between articles
             j++;
         });
